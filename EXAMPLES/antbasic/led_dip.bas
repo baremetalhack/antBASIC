@@ -1,0 +1,47 @@
+0010 REM "7-Segments LED DIP Switch Decoder"
+0020 REM "  --- common anode version, active LOW ---"
+0030 REM "BAREMETALHACK.COM --> Public domain"
+0040 :
+0050 REM "=== GPIO Mapping ==="
+0060 G=7:F=8:A=9:B=10:E=11:D=12:C=13:H=14:REM "Segments => BMH7-BMH14 (H=DP)"
+0070 M=3:N=4:O=5:P=6:REM "DIP Switches => BMH3-BMH6"
+0080 :
+0090 DIM L[16,7]:REM "Segment data for hexadecimal number"
+0100 L[0,0]=0,0,0,0,0,0,1:REM "0"
+0110 L[1,0]=1,0,0,1,1,1,1:REM "1"
+0120 L[2,0]=0,0,1,0,0,1,0:REM "2"
+0130 L[3,0]=0,0,0,0,1,1,0:REM "3"
+0140 L[4,0]=1,0,0,1,1,0,0:REM "4"
+0150 L[5,0]=0,1,0,0,1,0,0:REM "5"
+0160 L[6,0]=0,1,0,0,0,0,0:REM "6"
+0170 L[7,0]=0,0,0,1,1,1,1:REM "7"
+0180 L[8,0]=0,0,0,0,0,0,0:REM "8"
+0190 L[9,0]=0,0,0,0,1,0,0:REM "9"
+0200 L[10,0]=0,0,0,1,0,0,0:REM "A"
+0210 L[11,0]=1,1,0,0,0,0,0:REM "B"
+0220 L[12,0]=0,1,1,0,0,0,1:REM "C"
+0230 L[13,0]=1,0,0,0,0,1,0:REM "D"
+0240 L[14,0]=0,1,1,0,0,0,0:REM "E"
+0250 L[15,0]=0,1,1,1,0,0,0:REM "F"
+0260 :
+0270 S=1:GOSUB 370:REM "Turon off all LEDs"
+0280 FOR I=1 TO 20
+0290 GOSUB 1000:J=Q:PRINT J
+0300 OUT(A,L[J,0]):OUT(B,L[J,1]):OUT(C,L[J,2]):OUT(D,L[J,3])
+0310 OUT(E,L[J,4]):OUT(F,L[J,5]):OUT(G,L[J,6])
+0320 MSLEEP(500)
+0330 NEXT
+0340 S=1:GOSUB 370
+0350 END
+0360 :
+0370 REM "Simultaneous LED control"
+0380 OUT(A,S):OUT(B,S):OUT(C,S):OUT(D,S):OUT(E,S):OUT(F,S):OUT(G,S):OUT(H,S)
+0390 RETURN
+0400 :
+1000 REM "DIP Switch Reader (pin assignment: M-P, return: Q=value)"
+1010 Q=0
+1020 IF IN(M)==0 Q=Q+8
+1030 IF IN(N)==0 Q=Q+4
+1040 IF IN(O)==0 Q=Q+2
+1050 IF IN(P)==0 Q=Q+1
+1060 RETURN

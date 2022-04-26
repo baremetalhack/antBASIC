@@ -1,0 +1,6 @@
+0010 REM "Power of N"
+0020 :
+0030 PRINT "N","N**2","N**3","N**4","N**5"
+0040 FOR I=1 TO 10
+0050 PRINT I,I*I,I*I*I,I*I*I*I,I*I*I*I*I
+0060 NEXT

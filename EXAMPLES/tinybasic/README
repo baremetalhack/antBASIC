@@ -1,0 +1,10 @@
+This directory contains classical Tiny BASIC programs of the 1970s taken from the following books (slightly modified to fit antBASIC by Doctor BMH).
+
+REFERENCES:
+1. 石田晴久: マイクロコンピュータプログラミング入門 -Tiny BASICインタプリタ-,
+   近代科学社, 1978
+   Hrasuhisa Ishida: Introduction to microcomputer programming -Tiny BASIC
+   interpreter- (in Japanese), Kindai kagaku sha Co.,Ltd., 1978
+2. 石田晴久 編: マイクロコンピュータのプログラミング, 共立出版, 1978
+   Haruhisa Ishida ed.: Programming on microcomputers (in Japanese),
+   Kyoritsu shuppan Co., Ltd., 1978

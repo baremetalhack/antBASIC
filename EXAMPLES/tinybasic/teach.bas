@@ -1,0 +1,15 @@
+0010 REM "A Teaching Machine"
+0020 :
+0030 PRINT "Maximum ";
+0040 INPUT G
+0050 IF G<=0 END
+0060 A=RND():IF A>=G GOTO 60
+0070 B=RND():IF B>=G GOTO 70
+0080 C=0
+0090 PRINT A;" + ";B;" = ";
+0100 INPUT X
+0110 IF X<=0 END
+0120 IF X==(A+B) PRINT "Very good. Now try this.":GOTO 60
+0130 C=C+1
+0140 IF C>=3 PRINT "The answer is ";A+B:GOTO 60
+0150 PRINT "No good. Try again.":GOTO 90

@@ -1,0 +1,15 @@
+0010 REM "Character Codes"
+0020 :
+0030 DIM A[24]
+0040 PRINT "Starting ASCII code ";
+0050 INPUT C
+0060 IF C<=0 END
+0070 @[0]=C
+0080 A[0]=@[0]
+0090 FOR I=0 TO 22
+0100 @[I+1]=@[I]+1
+0110 A[I+1]=@[I+1]
+0120 NEXT
+0130 @[24]=0
+0140 PRINT ">>>";@;"<<<"
+0150 GOTO 40
