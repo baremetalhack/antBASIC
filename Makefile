@@ -65,8 +65,8 @@ pdfs:
 	groff $(GROFFFLAGS) antbasic.1 | ps2pdf - - > $(TARGET_DOC)/antbasic.pdf
 
 install: antbasic antcalib
-	install antbasic antcalib $(TARGET_BIN)
-	install antbasic.1 $(TARGET_MAN)
+	install -v -t $(TARGET_BIN) antbasic antcalib
+	install -v -D -t $(TARGET_MAN) antbasic.1
 
 clean:
 	rm -f *.o $(APPS) $(TESTAPPS)

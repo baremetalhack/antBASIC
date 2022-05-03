@@ -74,7 +74,7 @@ static char* help_container[] = {
                       "    ex. 1234, -1234, 0xABCD, 0xEF",
     "Strings",        "8bit ASCII characters surrounded by double quotation$" \
                       "Escaped special characters are as follows:$" \
-                      "    \\n LF, \\r CR, \\t TAB, \\a BELL, \\e ESCAPE, \\\\ backslash$" \
+                      "    \\a BEL, \\b BS, \\t TAB, \\n LF, \\r CR, \\e ESC, \\\\ backslash$" \
                       "Special array @ holds string$" \
                       "    ex. @=\"hello!\":@[0]=@[0]-0x20:print @ -> Hello!$" \
                       "        @[0]=33:@[1]=7:@[2]=0:print @ -> ! with alarm",

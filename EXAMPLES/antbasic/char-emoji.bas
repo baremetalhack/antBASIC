@@ -1,7 +1,7 @@
-0010 REM "=== Emoji Dump ==="
+0010 REM "Emoji Dump"
 0020 REM "NOTICE: You must pre-install Noto-Color-Emoji font package."
 0030 REM "    $ sudo apt install fonts-noto-color-emoji"
-0040 REM "    Restart Terminal program, and execute this program."
+0040 REM "    Restart LXTerminal, and execute this program."
 0050 REM "BAREMETALHACK.COM --> Public domain"
 0060 :
 0070 @[0]=0xF0:@[1]=0x9F:@[2]=0x98:@[3]=0x00:@[4]=0x00

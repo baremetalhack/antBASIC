@@ -145,20 +145,24 @@ prog_list(FILE *out, int color, int startnum, int endnum)
                         esc = 0;
                         if (ch < ' ' || ch == '\\') {
                             switch (ch) {
-                                case '\n':
-                                    esc = 'n';
+                                case '\007':
+                                    esc = 'a';
                                     break;
 
-                                case '\r':
-                                    esc = 'r';
+                                case '\010':
+                                    esc = 'b';
                                     break;
 
-                                case '\t':
+                                case '\011':
                                      esc = 't';
                                     break;
 
-                                case '\007':
-                                    esc = 'a';
+                                case '\012':
+                                    esc = 'n';
+                                    break;
+
+                                case '\015':
+                                    esc = 'r';
                                     break;
 
                                 case '\033':

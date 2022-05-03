@@ -23,7 +23,7 @@ antBASIC returns an 8bit status code to the shell (default value is zero). You c
 .PP
 example: \f(CWEND 123\fR returns 123 as a status code to the shell
 .SH VERSION
-This man page documents antBASIC version \fB1.0.0\fR.
+This man page documents antBASIC version \fB1.0.1\fR.
 .SH DESCRIPTION
 \fBantBASIC\fR is a product of the \fBBMH (Bare Metal Hacking)\fR project. It is a modernized version of \fBTiny BASIC\fR, with the addition of I/O manipulation instructions prepared for the \fBRaspberry Pi\fR. Although the language specification is minimal, beginners can learn the basics of programming, and a wide range of I/O controls through antBASIC.
 .SS PROGRAM
@@ -42,14 +42,16 @@ Signed 16bit integer (range from -32768 to 32767). Decimal and hexadecimal (\fI0
 example: \f(CW1234, -1234, 0xABCD, 0xEF\fR
 .SS STRINGS
 A string is defined as \fBUnicode\fR characters (encoded by \fBUTF-8\fR) surrounded by double quotations. Escaped special characters are as follows.
+.IP "Alarm (BELL)" 16
+\\a
+.IP "BS" 16
+\\b
+.IP "TAB" 16
+\\t
 .IP "LF" 16
 \\n
 .IP "CR" 16
 \\r
-.IP "TAB" 16
-\\t
-.IP "BELL" 16
-\\a
 .IP "ESCAPE" 16
 \\e
 .IP "backslash" 16
@@ -254,7 +256,7 @@ Wataru Nishida, \fIM.D., Ph.D.\fR
 .fi
 .SH PUBLICATION DATE
 .nf
-April 26th, 2022
+April 30rd, 2022
 Published from \fIJapan\fR
 .fi
 .SH COPYRIGHT

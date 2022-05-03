@@ -23,7 +23,7 @@
 
 #define BASIC_MAJOR             1
 #define BASIC_MINOR             0
-#define BASIC_PATCH             0
+#define BASIC_PATCH             1
 
 //
 // BASIC constants

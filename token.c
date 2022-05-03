@@ -261,20 +261,24 @@ string(token_t *tok)
         if (Next == '\\') {
             read_char();
             switch(Next) {
-                case 'n':
-                    Next = '\n';
+                case 'a':
+                    Next = '\007';
                     break;
 
-                case 'r':
-                    Next = '\r';
+                case 'b':
+                    Next = '\010';
                     break;
 
                 case 't':
-                    Next = '\t';
+                    Next = '\011';
                     break;
 
-                case 'a':
-                    Next = '\007';
+                case 'n':
+                    Next = '\012';
+                    break;
+
+                case 'r':
+                    Next = '\015';
                     break;
 
                 case 'e':
