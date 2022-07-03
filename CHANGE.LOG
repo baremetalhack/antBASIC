@@ -1,3 +1,11 @@
+=== antBASIC v1.0.2
+    2022-06-03
+    * main.c: signal() was replaced with sigaction()
+    * new statements: COLOR and LOCATE
+    * new command: EDIT
+    * EXAMPLES/antbasic: color-matrix.bas
+    * antbasic.1: updated
+
 === antBASIC v1.0.1
     2022-04-30
     * Makefile: install target was corrected.

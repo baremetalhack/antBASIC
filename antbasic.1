@@ -2,7 +2,7 @@
 .SH NAME
 antBASIC - A modern version of Tiny BASIC with GPIO functions
 .SH SYNTAX
-\fBantbasic\fR [\fIfile\fR [arguments]]
+\fBantbasic\fR [\fIsourcefile\fR [arguments]]
 .SS ARGUMENTS
 .nf
 number-to-A [number-to-B [string-to-@]]
@@ -23,7 +23,7 @@ antBASIC returns an 8bit status code to the shell (default value is zero). You c
 .PP
 example: \f(CWEND 123\fR returns 123 as a status code to the shell
 .SH VERSION
-This man page documents antBASIC version \fB1.0.1\fR.
+This man page documents antBASIC version \fB1.0.2\fR.
 .SH DESCRIPTION
 \fBantBASIC\fR is a product of the \fBBMH (Bare Metal Hacking)\fR project. It is a modernized version of \fBTiny BASIC\fR, with the addition of I/O manipulation instructions prepared for the \fBRaspberry Pi\fR. Although the language specification is minimal, beginners can learn the basics of programming, and a wide range of I/O controls through antBASIC.
 .SS PROGRAM
@@ -36,6 +36,14 @@ example:
 30 NEXT
 40 END\fR
 .fi
+.SS PROGRAM EXECUTION MODES
+There are three execution modes available.
+.IP "Normal mode" 16
+Stored program is invoked by \f(CWRUN\fR command in interactive session.
+.IP "Direct mode" 16
+Direct command line execution in interactive session.
+.IP "Shell mode" 16
+Execution from the shell.
 .SS NUMBERS
 Signed 16bit integer (range from -32768 to 32767). Decimal and hexadecimal (\fI0x\fR prefix is needed) numbers are distinguished internally.
 .PP
@@ -44,7 +52,7 @@ example: \f(CW1234, -1234, 0xABCD, 0xEF\fR
 A string is defined as \fBUnicode\fR characters (encoded by \fBUTF-8\fR) surrounded by double quotations. Escaped special characters are as follows.
 .IP "Alarm (BELL)" 16
 \\a
-.IP "BS" 16
+.IP "Backspace" 16
 \\b
 .IP "TAB" 16
 \\t
@@ -52,9 +60,9 @@ A string is defined as \fBUnicode\fR characters (encoded by \fBUTF-8\fR) surroun
 \\n
 .IP "CR" 16
 \\r
-.IP "ESCAPE" 16
+.IP "Escape" 16
 \\e
-.IP "backslash" 16
+.IP "Backslash" 16
 \\\\
 .IP "ASCII code" 16
 \\x## (## is a two-digit hexadecimal number)
@@ -95,13 +103,18 @@ Operator precedence: Unary > Mul/Div/Mod > Add/Sub > Condition > Bitwise
 .IP "Bitwise" 16
 &, |
 .SS STATEMENTS
-.IP "CLS" 16
+Statements marked with an \f(BIasterisk *\fR can be also executed in direct mode.
+.IP "CLS*" 16
 Clear screen
-.IP "DIM" 16
+.IP "COLOR*" 16
+Define color attribute (0 Black | 1 Red | 2 Green | 3 Yellow | 4 Blue | 5 Magenta | 6 Cyan | 7 White | +10 Bright). 1st argument is fore-ground color, 2nd argument is back-ground color (optional).
+.IP "" 16
+example: \f(CWCOLOR(11,4)\fR -> bright red text on blue background. 
+.IP "DIM*" 16
 Define array \f(BIsize\fR (not the maximum index number): DIM[colum,row].
 .IP "" 16
 NOTE: There is an array size limitation (\f(BIcolumn*row <= 512\fR).
-.IP "END" 16
+.IP "END*" 16
 Terminate program. If a number is given, antBASIC returns the value to the shell.
 .IP "FOR/NEXT" 16
 Iterate statements between FOR and NEXT.
@@ -109,33 +122,41 @@ Iterate statements between FOR and NEXT.
 example: \f(CWS=0:FOR A=1 TO 10:S=S+A:NEXT\fR
 .IP "" 16
 NOTE: \fIincrement step is fixed to ONE\fR
-.IP "GOTO" 16
-Jump to specified line number.
-.IP "" 16
-example: \f(CWGOTO 100, GOTO X\fR
-.IP "GOSUB/RETURN" 16
+.IP "GOSUB*/RETURN" 16
 Call subroutine / return to caller.
 .IP "" 16
 example: \f(CWGOSUB 200, GOSUB Y\fR
-.IP "IN" 16
+.IP "GOTO*" 16
+Jump to specified line number.
+.IP "" 16
+example: \f(CWGOTO 100, GOTO X\fR
+.IP "IF*" 16
+Conditional execution. If the expression immediately after \f(CWIF\fR is \f(BInot zero\fR, the following statement(s) will be executed.
+.IP "" 16
+example: \f(CWIF A>=0x61 @[0]=A-0x20:@[1]=0:PRINT @\fR
+.IP "IN*" 16
 Read bit status. Argument is \f(BIBMH-style GPIO number (1-14)\fR.
 .IP "" 16
 returns: 0 or 1
 .IP "" 16
 example: \f(CWIN(B)\fR -> 0|1
-.IP "INPUT" 16
+.IP "INPUT*" 16
 Input data from user and stores it in a variable or string array @.
 .IP "" 16
 example: in the case of number) \f(CWINPUT A\fR, string) \f(CWINPUT @\fR
-.IP "OUT" 16
+.IP "LOCATE*" 16
+Locate cursor position (left-upper corner is [0,0]). 1st argument is horizontal position, and 2nd argument is vertical position.
+.IP "" 16
+example: \f(CWLOCATE(X,Y)\fR
+.IP "OUT*" 16
 Set bit output as zero or one. First argument is a BMH-style GPIO number (1-14) and second argument is a bit Level (0 GND|1 Vdd).
 .IP "" 16
 example: \f(CWOUT(B,L)\fR
-.IP "OUTHZ" 16
+.IP "OUTHZ*" 16
 Set bit output as zero or high-impedance (HiZ). First argument is a BMH-style number (1-14), second argument is a bit Level (0 GND|1 Vdd), and third argument is a mode of internal Pull-up resistor (0 None|1 Pull-up).
 .IP "" 16
 example: \f(CWOUTHZ(B,L,P)\fR
-.IP "PRINT" 16
+.IP "PRINT*" 16
 Print data.
 .IP "" 16
 integer: immediate value, variable, array
@@ -155,15 +176,15 @@ example: \f(CWREM\fR, \f(CWREM "This is a comment string"\fR
 Returns random number (range from 0 to 32767).
 .IP "" 16
 example: \f(CWRND()\fR
-.IP "MSLEEP" 16
+.IP "MSLEEP*" 16
 Suspend execution for \fImilli\fR-seconds.
 .IP "" 16
 example: \f(CWMSLEEP(1000)\fR -> 1sec wait
-.IP "USLEEP" 16
+.IP "USLEEP*" 16
 Suspend execution for \fImicro\fR-seconds.
 .IP "" 16
 example: \f(CWUSLEEP(1000)\fR -> 1msec wait
-.SS DIRECT COMMANDS
+.SS DIRECT MODE COMMANDS
 .IP "CLEAR" 16
 Clear containers (variables and arrays).
 .IP "CLS" 16
@@ -176,6 +197,10 @@ example: single line) \f(CWDELETE 100\fR, multiple lines) \f(CWDELETE 210,290\fR
 Dump containers.
 .IP "" 16
 example: \f(CWDUMP\fR (all), \f(CWDUMP V\fR (variables), \f(CWDUMP A\fR (arrays), \f(CWDUMP S\fR (string), \f(CWDUMP L\fR (program lines), \f(CWDUMP B\fR (bytecodes)
+.IP "EDIT" 16
+Edit a program line using GNU Readline input editor.
+.IP "" 16
+example: \f(CWEDIT 100\fR
 .IP "END" 16
 Quit antBASIC.
 .IP "FILES" 16
@@ -200,6 +225,8 @@ Merge an additional file into memory.
 example: \f(CWMERGE "mylib/addon.bas"\fR
 .IP "NEW" 16
 Clear program.
+.IP "PRINT" 16
+Same as \f(CWPRINT\fR statement..
 .IP "RENUM" 16
 Renumber program lines.
 .IP "" 16
@@ -237,7 +264,7 @@ export ANT_MICROWAIT=220
 \fR
 .fi
 
-.SS READLINE LIBRARY
+.SH REQUIRED LIBRARY
 Default Makefile will build an antBASIC binary linked with the \fBGNU Readline library\fR. This binary allows the user to do editing lines before sending them to antBASIC.
 .SH HOME PAGE & SOURCE REPOSITORY
 .nf
@@ -256,7 +283,7 @@ Wataru Nishida, \fIM.D., Ph.D.\fR
 .fi
 .SH PUBLICATION DATE
 .nf
-April 30rd, 2022
+Jun 3rd, 2022
 Published from \fIJapan\fR
 .fi
 .SH COPYRIGHT

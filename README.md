@@ -61,7 +61,8 @@ export ANT_MICROWAIT=220
 You can find the usage and grammar of antBASIC in the man file. Enter the command `$ man antbasic` in a terminal or open [antbasic.pdf](./DOCUMENTS/antbasic.pdf) in the DOCUMENTS 📂 directory of the source tree.
 
 ## 🎰 Version
-Initial revision **1.0.1** released on ___April 30rd, 2022___
+Initial release **1.0.0** released on ___Apr 26th, 2022___
+Revised revision **1.0.2** released on ___Jun 3rd, 2022___
 
 ## 📝 Author
 Doctor BMH 🇯🇵  

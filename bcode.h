@@ -25,7 +25,7 @@
 //   Type 3    String: 0x03, len (includes null terminator), ch1, ch2, ..., 0
 //   Type 4  Variable: 0x10 - 0x29
 //   Type 5 Delimiter: 0x40 - 0x56
-//   Type 6   Keyword: 0x80 - 0xA1
+//   Type 6   Keyword: 0x80 - 0xA3
 //
 //-------------------------------------------------
 
@@ -99,9 +99,11 @@
 
 #define BCODE_CLEAR             (BCODE_KEYWORD | TOKEN_CLEAR)
 #define BCODE_CLS               (BCODE_KEYWORD | TOKEN_CLS)
+#define BCODE_COLOR             (BCODE_KEYWORD | TOKEN_COLOR)
 #define BCODE_DELETE            (BCODE_KEYWORD | TOKEN_DELETE)
 #define BCODE_DIM               (BCODE_KEYWORD | TOKEN_DIM)
 #define BCODE_DUMP              (BCODE_KEYWORD | TOKEN_DUMP)
+#define BCODE_EDIT              (BCODE_KEYWORD | TOKEN_EDIT)
 #define BCODE_END               (BCODE_KEYWORD | TOKEN_END)
 #define BCODE_FOR               (BCODE_KEYWORD | TOKEN_FOR)
 #define BCODE_FREE              (BCODE_KEYWORD | TOKEN_FREE)
@@ -113,6 +115,7 @@
 #define BCODE_IF                (BCODE_KEYWORD | TOKEN_IF)
 #define BCODE_INPUT             (BCODE_KEYWORD | TOKEN_INPUT)
 #define BCODE_LIST              (BCODE_KEYWORD | TOKEN_LIST)
+#define BCODE_LOCATE            (BCODE_KEYWORD | TOKEN_LOCATE)
 #define BCODE_NEW               (BCODE_KEYWORD | TOKEN_NEW)
 #define BCODE_NEXT              (BCODE_KEYWORD | TOKEN_NEXT)
 #define BCODE_PRINT             (BCODE_KEYWORD | TOKEN_PRINT)

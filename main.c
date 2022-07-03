@@ -6,7 +6,7 @@
 
 #include <stdio.h>      // FILE{}, printf()
 #include <setjmp.h>     // jmp_buf{}, setjmp()
-#include <signal.h>     // signal()
+#include <signal.h>     // sigemptyset(), sigaction(), SIG*, SA_*
 #include <stdlib.h>     // atoi()
 #include <string.h>     // strncpy()
 
@@ -47,11 +47,46 @@ welcome(void)
     }
 }
 
+static int volatile sigint_edit_flag = 0;
+
+static void
+sigint_edit_handler()
+{
+    sigint_edit_flag = 1;
+}
+
+int
+sigint_edit_abort(void) {
+    return sigint_edit_flag;
+}
+
+void
+sigint_edit_register(void)
+{
+    struct sigaction act;
+
+    act.sa_handler = sigint_edit_handler;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    sigint_edit_flag = 0;
+    sigaction(SIGINT, &act, NULL);
+}
+
 static void
 sigint_handler()
 {
-    signal(SIGINT, sigint_handler);
-    longjmp(IntRecovery, 0);
+    longjmp(IntRecovery, 1);
+}
+
+void
+sigint_register(void)
+{
+    struct sigaction act;
+
+    act.sa_handler = sigint_handler;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = SA_RESETHAND | SA_NODEFER;
+    sigaction(SIGINT, &act, NULL);
 }
 
 static void
@@ -75,6 +110,7 @@ is_command(int inst) {
         case BCODE_CLS:
         case BCODE_DUMP:
         case BCODE_DELETE:
+        case BCODE_EDIT:
         case BCODE_FILES:
         case BCODE_FREE:
         case BCODE_HELP:
@@ -123,8 +159,8 @@ main(int argc, char *argv[])
         return 255;
     }
 #endif // PI
-    signal(SIGINT, sigint_handler);
     welcome();
+    sigint_register();
 
     // === Shell mode ===
 
@@ -164,8 +200,10 @@ main(int argc, char *argv[])
         if (Lnum) {
             printf("\n%sAborted ", ESCAPE_LRED);
             location();
+            Lnum = 0;
         } else
             printf("\n");
+        sigint_register();
     }
     if ((ret = setjmp(EvalRecovery)) != 0) {
         printf("%sError: %s", ESCAPE_LRED, eval_result(ret));
@@ -194,7 +232,8 @@ main(int argc, char *argv[])
     // === Interactive direct mode ===
 
     while (1) {
-        Mode = BASIC_MODEDIRECT;                    // Enter direct mode
+        printf("\e[0;0m");          // Reset screen attributes
+        Mode = BASIC_MODEDIRECT;    // Enter direct mode
         Pnum = 0;
         ret = basic_readline("> ", text, TOKEN_MAXBUF);
         if (ret == 0)

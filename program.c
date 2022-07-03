@@ -85,7 +85,7 @@ prog_search(int linenum)
 }
 
 static void
-spacing(FILE *out)
+spacing(int fd)
 {
     if (bcode_nextiseol())
         return;
@@ -93,11 +93,11 @@ spacing(FILE *out)
         if (bcode_next() != BCODE_AT)
             return;
     }
-    fprintf(out, " ");
+    dprintf(fd, " ");
 }
 
 int
-prog_list(FILE *out, int color, int startnum, int endnum)
+prog_list(int fd, int color, int startnum, int endnum)
 {
     int sidx, eidx, i, loop;
     bcode_t b;
@@ -115,7 +115,7 @@ prog_list(FILE *out, int color, int startnum, int endnum)
 
     bcode_start(Program);
     for (i = sidx; i <= eidx; i++) {
-        fprintf(out, "%04d ", Lines[ i ].num);
+        dprintf(fd, "%04d ", Lines[ i ].num);
         bcode_setpc(Lines[ i ].add);
         loop = 1;
         while (loop) {
@@ -126,20 +126,20 @@ prog_list(FILE *out, int color, int startnum, int endnum)
                     break;
 
                 case BCODE_TYPE_NUMBER10:
-                    fprintf(out, "%d", b.num);
-                    spacing(out);
+                    dprintf(fd, "%d", b.num);
+                    spacing(fd);
                     break;
 
                 case BCODE_TYPE_NUMBER16:
                     if (b.num & 0xFF00)
-                        fprintf(out, "0x%04hX", b.num);
+                        dprintf(fd, "0x%04hX", b.num);
                     else
-                        fprintf(out, "0x%02hX", b.num);
-                    spacing(out);
+                        dprintf(fd, "0x%02hX", b.num);
+                    spacing(fd);
                     break;
 
                 case BCODE_TYPE_STRING:
-                    fprintf(out, "\"");
+                    dprintf(fd, "\"");
                     ptr = b.str;
                     while ((ch = *ptr++)) {
                         esc = 0;
@@ -180,46 +180,46 @@ prog_list(FILE *out, int color, int startnum, int endnum)
                         }
                         if (esc) {
                             if (esc == 'x')
-                                fprintf(out, "\\x%02X", ch);
+                                dprintf(fd, "\\x%02X", ch);
                             else
-                                fprintf(out, "\\%c", esc);
+                                dprintf(fd, "\\%c", esc);
                         } else
-                            fprintf(out, "%c", ch);
+                            dprintf(fd, "%c", ch);
                     }
-                    fprintf(out, "\"");
+                    dprintf(fd, "\"");
                     break;
 
                 case BCODE_TYPE_VARIABLE:
                     if (color)
-                        fprintf(out, ESCAPE_LBLUE);
-                    fprintf(out, "%c", b.idx + 'A');
+                        dprintf(fd, ESCAPE_LBLUE);
+                    dprintf(fd, "%c", b.idx + 'A');
                     if (color)
-                        fprintf(out, ESCAPE_DEFAULT);
-                    spacing(out);
+                        dprintf(fd, ESCAPE_DEFAULT);
+                    spacing(fd);
                     break;
 
                 case BCODE_TYPE_KEYWORD:
                     if (color)
-                        fprintf(out, ESCAPE_LGREEN);
-                    fprintf(out, "%s", token_keyword(b.idx));
+                        dprintf(fd, ESCAPE_LGREEN);
+                    dprintf(fd, "%s", token_keyword(b.idx));
                     if (color)
-                        fprintf(out, ESCAPE_DEFAULT);
-                    spacing(out);
+                        dprintf(fd, ESCAPE_DEFAULT);
+                    spacing(fd);
                     break;
 
                 case BCODE_TYPE_DELIMITER:
                     if (color && b.inst == BCODE_AT)
-                        fprintf(out, ESCAPE_LBLUE);
-                    fprintf(out, "%s", token_delimiter(b.idx));
+                        dprintf(fd, ESCAPE_LBLUE);
+                    dprintf(fd, "%s", token_delimiter(b.idx));
                     if (color && b.inst == BCODE_AT)
-                        fprintf(out, ESCAPE_DEFAULT);
+                        dprintf(fd, ESCAPE_DEFAULT);
                     if (b.inst == BCODE_RPAREN || b.inst == BCODE_RBRACK)
                         if (! bcode_nextisdlm() && ! bcode_nextiseol())
-                            fprintf(out, " ");
+                            dprintf(fd, " ");
                     break;
             }
         }
-        fprintf(out, "\n");
+        dprintf(fd, "\n");
     }
     return PROG_SUCCESS;
 }

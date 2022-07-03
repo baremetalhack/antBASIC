@@ -1,4 +1,5 @@
 #include <stdio.h>      // FILE{}, fgets()
+#include <unistd.h>     // STD*_FILENO
 #include "token.h"
 #include "bcode.h"
 #include "program.h"
@@ -36,7 +37,7 @@ main()
         bcode_read(&b);
         if (b.inst == BCODE_LIST) {
             fprintf(Debug, "-----------------------------------------\n");
-            ret = prog_list(stdout, 1, Lines[1].num, Lines[Lsize].num);
+            ret = prog_list(STDOUT_FILENO, 1, Lines[1].num, Lines[Lsize].num);
             fprintf(Debug, "-----------------------------------------\n");
         } else if (b.inst == BCODE_NEW) {
             prog_init();

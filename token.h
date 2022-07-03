@@ -95,43 +95,46 @@
 
 #define TOKEN_CLEAR     0
 #define TOKEN_CLS       1
-#define TOKEN_DELETE    2
-#define TOKEN_DIM       3
-#define TOKEN_DUMP      4
-#define TOKEN_END       5
-#define TOKEN_FOR       6
-#define TOKEN_FREE      7
-#define TOKEN_GOSUB     8
-#define TOKEN_GOTO      9
-#define TOKEN_HELP      10
-#define TOKEN_HEX2      11
-#define TOKEN_HEX4      12
-#define TOKEN_IF        13
-#define TOKEN_INPUT     14
-#define TOKEN_LIST      15
-#define TOKEN_NEW       16
-#define TOKEN_NEXT      17
-#define TOKEN_PRINT     18
-#define TOKEN_REM       19
-#define TOKEN_RENUM     20
-#define TOKEN_RETURN    21
-#define TOKEN_RND       22
-#define TOKEN_RUN       23
-#define TOKEN_TO        24
+#define TOKEN_COLOR     2
+#define TOKEN_DELETE    3
+#define TOKEN_DIM       4
+#define TOKEN_DUMP      5
+#define TOKEN_EDIT      6
+#define TOKEN_END       7
+#define TOKEN_FOR       8
+#define TOKEN_FREE      9
+#define TOKEN_GOSUB     10
+#define TOKEN_GOTO      11
+#define TOKEN_HELP      12
+#define TOKEN_HEX2      13
+#define TOKEN_HEX4      14
+#define TOKEN_IF        15
+#define TOKEN_INPUT     16
+#define TOKEN_LIST      17
+#define TOKEN_LOCATE    18
+#define TOKEN_NEW       19
+#define TOKEN_NEXT      20
+#define TOKEN_PRINT     21
+#define TOKEN_REM       22
+#define TOKEN_RENUM     23
+#define TOKEN_RETURN    24
+#define TOKEN_RND       25
+#define TOKEN_RUN       26
+#define TOKEN_TO        27
 
 // --- OS dependent section ---
 
-#define TOKEN_FILES     25
-#define TOKEN_LOAD      26
-#define TOKEN_MERGE     27
-#define TOKEN_MSLEEP    28
-#define TOKEN_SAVE      29
-#define TOKEN_USLEEP    30
+#define TOKEN_FILES     28
+#define TOKEN_LOAD      29
+#define TOKEN_MERGE     30
+#define TOKEN_MSLEEP    31
+#define TOKEN_SAVE      32
+#define TOKEN_USLEEP    33
 
 #ifdef PI
-#define TOKEN_IN        31
-#define TOKEN_OUT       32
-#define TOKEN_OUTHZ     33
+#define TOKEN_IN        34
+#define TOKEN_OUT       35
+#define TOKEN_OUTHZ     36
 #endif // PI
 
 //

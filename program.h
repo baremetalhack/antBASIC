@@ -64,7 +64,7 @@ extern int Pnum;
 //
 
   void prog_init(void);
-   int prog_list(FILE *, int, int, int);
+   int prog_list(int, int, int, int);
    int prog_search(int);
    int prog_delete(int, int);
    int prog_insert(int, byte_t *, int);

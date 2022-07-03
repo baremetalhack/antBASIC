@@ -9,10 +9,13 @@
 #include <string.h>             // strlen(), strncpy()
 #include <stdlib.h>             // atoi(), free()
 #include <dirent.h>             // DIR{}, dirent{}, scandir()
-#include <unistd.h>             // usleep()
+#include <unistd.h>             // usleep(), getpagesize(), ftruncate(), unlink(),
+                                // close(), STD*_FILENO
+#include <fcntl.h>              // open(), O_*
+#include <sys/mman.h>           // mmap(), munmap(), PROT_*, MAP_*
 
 #ifdef READLINE
-#include <readline/readline.h>  // readline()
+#include <readline/readline.h>  // readline(), rl_*()
 #include <readline/history.h>   // add_history()
 #endif // READLINE
 
@@ -23,6 +26,7 @@
 #include "program.h"
 #include "container.h"
 #include "escape.h"
+#include "sigint.h"
 #include "debug.h"
 
 #ifdef PI
@@ -99,6 +103,10 @@ static char* help_operator[] = {
 static char* help_statement[] = {
     "STATEMENTES",    "",
     "CLS",            "Clear screen",
+    "COLOR",          "Define color attribute$" \
+                      "    Color codes: 0)Black, 1)Red, 2)Green, 3)Yellow$" \
+                      "        4)Blue, 5)Magenta, 6)Cyan, 7)White, +10)Bright$" \
+                      "    Fore-graound, Back-ground: COLOR(F,B)",
     "DIM",            "Define array size: DIM[ col, row ]$" \
                       "    NOTE: array size limitation, col * row <= 512",
     "END",            "Terminate program",
@@ -107,12 +115,14 @@ static char* help_statement[] = {
                       "    NOTE: increment step is fixed to ONE",
     "GOTO",           "Jump to specified line number: ex. GOTO 100, GOTO X",
     "GOSUB/RETURN",   "Call subroutine / return to caller: ex. GOSUB 200, GOSUB Y",
-    "IF",             "Conditional execution: if expression is ZERO then goto next line$" \
-                      "    ex. IF A<B GOTO 100, IF A&0x80 B=128:PRINT \"MSB is on\"",
+    "IF",             "Conditional execution. If the expression immediately after IF$" \
+                      "is not zero, the following statement(s) will be executed.$" \
+                      "    ex. IF A>=0x61 @[0]=A-0x20:@[1]=0:PRINT @",
 #ifdef PI
     "IN",             "Read GPIO (B 1-14) bit level: IN(B) -> 0|1",
 #endif // PI
     "INPUT",          "Input data from user: number) INPUT A, string) INPUT @",
+    "LOCATE",         "Locate cursor (left-upper-corner = [0,0]): LOCATE(X,Y)",
 #ifdef PI
     "OUT",            "Set GPIO (B 1-14) bit level (L 0 GND|1 Vdd): OUT(B,L)",
     "OUTHZ",          "Set GPIO (B 1-14) bit level (L 0 GND|1 HiZ),$" \
@@ -138,6 +148,7 @@ static char* help_command[] = {
     "DELETE",         "Delete statement(s): DELETE 100, DELETE 210,290",
     "DUMP",           "Dump containers: DUMP (all), DUMP V (variables), DUMP A (arrays),$" \
                       "     DUMP S (string), DUMP L (lines), DUMP B (bytecodes)",
+    "EDIT",           "Edit a program line using GNU Readline input editor: EDIT 120",
     "END",            "Quit antBASIC",
     "FILES",          "List files in current working directory",
     "FREE",           "Display memory usage",
@@ -200,8 +211,9 @@ basic_readline(char *msg, char *buf, int size)
                 *ptr = 0;
                 break;
             }
+            ptr++;
         }
-        len = strlen(ptr);
+        len = strlen(buf);
     }
 #endif // READLINE
     return len;
@@ -479,6 +491,57 @@ stat_cls(void)
 }
 
 static void
+stat_color(void)
+{
+    word_t fc = -1, bc = -1;
+
+    if (bcode_next() != BCODE_LPAREN)
+        basic_error(BASIC_SYNTAXERROR);
+    bcode_skip();
+    fc = eval();
+    if (bcode_next() == BCODE_COMMA) {
+        bcode_skip();
+        bc = eval();
+    }
+    if (bcode_next() != BCODE_RPAREN)
+        basic_error(BASIC_SYNTAXERROR);
+    bcode_skip();
+
+    if (fc >= 0 && fc <= 7) {
+        printf("\e[%dm", fc + 30);
+    } else if (fc >= 10 && fc <= 17) {
+        printf("\e[%dm", fc + 80);
+    }
+    if (bc >= 0 && bc <=7) {
+        printf("\e[%dm", bc + 40);
+    } else if (bc >= 10 && bc <= 17) {
+        printf("\e[%dm", bc + 90);
+    }
+    DMSG(">>> %05d COLOR(%d,%d)", Lnum, fc, bc);
+}
+
+static void
+stat_locate(void)
+{
+    word_t x, y;
+
+    if (bcode_next() != BCODE_LPAREN)
+        basic_error(BASIC_SYNTAXERROR);
+    bcode_skip();
+    x = eval();
+    if (bcode_next() != BCODE_COMMA)
+        basic_error(BASIC_SYNTAXERROR);
+    bcode_skip();
+    y = eval();
+    if (bcode_next() != BCODE_RPAREN)
+        basic_error(BASIC_SYNTAXERROR);
+    bcode_skip();
+
+    printf("\e[%d;%dH", y, x);
+    DMSG(">>> %05d LOCATE(%d,%d)", Lnum, x, y);
+}
+
+static void
 stat_usleep(void)
 {
     word_t val;
@@ -750,6 +813,155 @@ cmd_clear(void)
     cont_init();
 }
 
+#ifdef READLINE
+static int   line_flag;
+static char *line_ptr = NULL;
+static char  line_buf[ BASIC_MAXLINECHAR ];
+static char  line_fn[ 32 ];
+static int   line_fd;
+static int   line_psize;
+static char *line_map;
+
+static int
+line_setup(void)
+{
+    int ret;
+
+    line_psize = getpagesize();
+
+    strcpy(line_fn, "/tmp/antbasic-tmp-XXXXXX");
+    line_fd = mkstemp(line_fn);
+    if (line_fd < 0) {
+        return -1;
+    }
+    
+    ret = ftruncate(line_fd, line_psize);
+    if (ret < 0) {
+        close(line_fd);
+        return -2;
+    }
+
+    line_map = mmap(NULL, line_psize, PROT_READ | PROT_WRITE, MAP_PRIVATE, line_fd, 0);
+    if (line_map == MAP_FAILED) {
+        close(line_fd);
+        return -3;
+    }
+    return 0;
+}
+
+static void
+line_term(void) {
+    close(line_fd);
+    unlink(line_fn);
+    munmap(line_map, line_psize);
+}
+
+static void
+line_handler(char *line)
+{
+    line_ptr = line;
+    line_flag = 0;
+}
+
+static char*
+line_edit(char *prompt, char *src)
+{
+    int abort = 0;
+
+    sigint_edit_register();
+    rl_callback_handler_install(prompt, &line_handler);
+    rl_insert_text(src);
+    rl_redisplay ();
+
+    line_flag = 1;
+    while (line_flag) {
+        rl_callback_read_char();
+        if (sigint_edit_abort()) {
+            abort = 1;
+            break;
+        }
+    }
+    rl_callback_handler_remove();
+    if (abort) {
+        sigint_register();
+        return NULL;
+    } else {
+        strncpy(line_buf, line_ptr, sizeof(line_buf));
+        free(line_ptr);
+        sigint_register();
+        return line_buf;
+    }
+}
+#endif
+
+static void
+cmd_edit(void)
+{
+#ifndef READLINE
+    printf("%sError: EDIT command needs GNU Readline Library.%s\n",
+        ESCAPE_LRED, ESCAPE_DEFAULT);
+    return;
+#else
+    bcode_t b;
+    int num, ret, len;
+    char buf[ BASIC_MAXLINECHAR ], *ptr;
+    byte_t cmd[ BCODE_MAXSIZE ];
+
+    if (bcode_next() != BCODE_NUMBER10)
+        basic_error(BASIC_NOLINENUM);
+    bcode_read(&b);
+    num = b.num;
+    ret = prog_search(num);
+    if (ret < 0)
+        basic_error(BASIC_NOLINENUM);
+
+    ret = line_setup();
+    if (ret < 0)
+        basic_error(BASIC_FILEIOERROR);
+    ret = prog_list(line_fd, PROG_LISTPLAIN, num, num);
+    len = strlen(line_map);
+    line_map[ len - 1 ] = 0;
+    strncpy(buf, line_map, BASIC_MAXLINECHAR);
+    line_term();
+
+    printf("%sTo abort editing, press ^C followed by Enter.%s\n", ESCAPE_LMAGENTA, ESCAPE_DEFAULT);
+    ptr = line_edit("> ", buf);
+    if (ptr == NULL) {
+        return;
+    }
+    while (*ptr == ' ')
+        ptr++;
+    if (*ptr == 0)
+        return;
+
+    token_source(ptr);
+    len = bcode_compile(cmd);
+    if (len < 0) {
+        printf("%sError: %s\n", ESCAPE_LRED, bcode_result(-len));
+    } else {
+        bcode_start(cmd);
+        bcode_read(&b);
+        if (b.type == BCODE_TYPE_NUMBER10) {
+            num = b.num;
+            if (bcode_next() == BCODE_EOL) {    // --- delete a line
+                ret = prog_delete(num, num);
+                if (ret) {
+                    printf("%sError: %s\n", ESCAPE_LRED, prog_result(ret));
+                }
+            } else {                            // --- insert a line
+                bcode_read(&b);
+                ret = prog_insert(num, &cmd[ b.pos ], len - 3);
+                if (ret) {
+                    printf("%sError: %s\n", ESCAPE_LRED, prog_result(ret));
+                }
+            }
+        } else {
+            printf("%sError: %s\n", ESCAPE_LRED, "Illegal editing");
+        }
+    }
+#endif
+}
+
 static void
 cmd_list(void)
 {
@@ -776,7 +988,7 @@ cmd_list(void)
         }
     } else if (bcode_next() != BCODE_EOL)
         basic_error(BASIC_ILLRANGE);
-    ret = prog_list(stdout, PROG_LISTCOLOR, start, end);
+    ret = prog_list(STDOUT_FILENO, PROG_LISTCOLOR, start, end);
     if (ret)
         basic_error(ret | BASIC_PROG_ERROR);
 }
@@ -991,22 +1203,21 @@ static void
 cmd_save(void)
 {
     bcode_t b;
-    FILE *dst;
-    int ret;
+    int fd, ret;
 
     if (! bcode_nextisstr())
         basic_error(BASIC_NOFILENAME);
     bcode_read(&b);
     DMSG("Saving file \"%s\"\n", b.str);
-    dst = fopen((char *) b.str, "w");
-    if (dst == NULL)
+    fd = open((char *) b.str, O_CREAT | O_RDWR, 0666);
+    if (fd < 0)
         basic_error(BASIC_FILEIOERROR);
-    ret = prog_list(dst, PROG_LISTPLAIN, Lines[ 1 ].num, Lines[ Lsize ].num);
+    ret = prog_list(fd, PROG_LISTPLAIN, Lines[ 1 ].num, Lines[ Lsize ].num);
     if (ret) {
-        fclose(dst);
+        close(fd);
         basic_error(ret | BASIC_PROG_ERROR);
     }
-    fclose(dst);
+    close(fd);
     printf("%d lines saved\n", Lsize);
 }
 
@@ -1116,6 +1327,10 @@ basic_exec(void)
                         stat_cls();
                         break;
 
+                    case BCODE_COLOR:
+                        stat_color();
+                        break;
+
                     case BCODE_DIM:
                         stat_dim();
                         break;
@@ -1139,6 +1354,10 @@ basic_exec(void)
 
                     case BCODE_INPUT:
                         stat_input();
+                        break;
+
+                    case BCODE_LOCATE:
+                        stat_locate();
                         break;
 
                     case BCODE_NEXT:
@@ -1230,6 +1449,10 @@ basic_command(int inst)
 
         case BCODE_DELETE:
             cmd_delete();
+            break;
+
+        case BCODE_EDIT:
+            cmd_edit();
             break;
 
         case BCODE_DUMP:

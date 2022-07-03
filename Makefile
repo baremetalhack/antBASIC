@@ -17,7 +17,7 @@
 CFLAGS := -Wall -Wextra
 CFLAGS += -DREADLINE ### Build antBASIC with readline extension
 CFLAGS += -DPI ### Build antBASIC targeted for Raspberry Pi
-#CFLAGS += -DDEBUG ### Turn on in the case of debugging
+# CFLAGS += -DDEBUG ### Turn on in the case of debugging
 LDLIBS := -lreadline ### Link with GNU Readline library
 ATPFLAGS := -t 8 -date `date "+%Y-%m-%d"`
 ATPFLAGS += -T A4 -M 1,1,2,2 cm	### Paper size and margin definition
@@ -31,7 +31,7 @@ TARGET_DOC := ./DOCUMENTS
 HEADERS = byteword.h token.h bcode.h program.h container.h function.h eval.h basic.h debug.h escape.h
 APPS = antbasic antcalib
 TESTAPPS = test_token test_bcode test_prog test_eval test_assign
-PDFS = $(TARGET_DOC)/src.pdf $(TARGET_DOC)/antbasic.pdf
+PDFS = $(TARGET_DOC)/antbasic_src.pdf $(TARGET_DOC)/antbasic_man.pdf
 
 .SECONDEXPANSION:
 
@@ -61,8 +61,8 @@ antcalib: antcalib.c
 	gcc $(CFLAGS) -o $@ antcalib.c
 
 pdfs:
-	atp $(ATPFLAGS) Makefile byteword.h debug.h escape.h token.h token.c test_token.c bcode.h bcode.c test_bcode.c program.h program.c test_prog.c container.h container.c function.h function.c eval.h eval.c test_eval.c test_assign.c basic.h basic.c pi_gpio.h pi_gpio.c main.c antcalib.c | ps2pdf - - > $(TARGET_DOC)/src.pdf
-	groff $(GROFFFLAGS) antbasic.1 | ps2pdf - - > $(TARGET_DOC)/antbasic.pdf
+	atp $(ATPFLAGS) Makefile byteword.h debug.h escape.h token.h token.c test_token.c bcode.h bcode.c test_bcode.c program.h program.c test_prog.c container.h container.c function.h function.c eval.h eval.c test_eval.c test_assign.c basic.h basic.c pi_gpio.h pi_gpio.c main.c antcalib.c | ps2pdf - - > $(TARGET_DOC)/antbasic_src.pdf
+	groff $(GROFFFLAGS) antbasic.1 | ps2pdf - - > $(TARGET_DOC)/antbasic_man.pdf
 
 install: antbasic antcalib
 	install -v -t $(TARGET_BIN) antbasic antcalib
