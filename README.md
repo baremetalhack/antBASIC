@@ -62,7 +62,7 @@ You can find the usage and grammar of antBASIC in the man file. Enter the comman
 
 ## 🎰 Version
 Initial release **1.0.0** released on ___Apr 26th, 2022___
-Revised revision **1.0.2** released on ___Jun 3rd, 2022___
+Revised version **1.0.3** released on ___Nov 27th, 2022___
 
 ## 📝 Author
 Doctor BMH 🇯🇵  
@@ -70,4 +70,6 @@ Wataru Nishida, _M.D.🩺, Ph.D._ 🎓
 
 ## 👀 See Also
 [🌐 BMH Home Page](https://baremetalhack.com/en.html)  
-[📺 BMH YouTube Channel](https://www.youtube.com/channel/UCQGey9r62VuiZrTy74HMHAg)
+[📂 antBASIC GitHub Repository](https://github.com/baremetalhack/antBASIC)
+[📺 BMH YouTube Channel](https://www.youtube.com/@baremetalhacking)
+[🐣 DoctorBMH Twitter](https://twitter.com/DoctorBMH)

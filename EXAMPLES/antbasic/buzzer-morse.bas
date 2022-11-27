@@ -1,7 +1,7 @@
-0010 REM "Morse Coder"
+0010 REM "=== Morse Coder ==="
 0020 REM "BAREMETALHACK.COM --> Public doman"
 0030 :
-0040 REM "=== GPIO Mapping and Constant ==="
+0040 REM "--- GPIO Mapping and Constants --"
 0050 B=10:REM "Buzzer pin => BMH10"
 0060 T=100:REM "Timing unit => 100msec"
 0070 :
@@ -28,7 +28,7 @@
 0280 I=0
 0290 C=L[I]:I=I+1
 0300 IF C==0 PRINT:PRINT:GOTO 110
-0310 @[0]=C:@[1]=0:PRINT @;
+0310 @[0]=C:@[1]=0:COLOR(15,0):PRINT @;:COLOR(7,0)
 0320 IF C==0x20 GOSUB 2400:GOTO 290
 0330 C=C-0x41
 0340 GOSUB 1400

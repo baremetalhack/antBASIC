@@ -1,4 +1,4 @@
-0010 REM "Emoji Dump"
+0010 REM "=== Emoji Dump==="
 0020 REM "NOTICE: You must pre-install Noto-Color-Emoji font package."
 0030 REM "    $ sudo apt install fonts-noto-color-emoji"
 0040 REM "    Restart LXTerminal, and execute this program."

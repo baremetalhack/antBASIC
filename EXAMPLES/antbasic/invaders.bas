@@ -1,4 +1,4 @@
-0010 REM "Invaders"
+0010 REM "=== Invaders ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 FOR I=1 TO 10

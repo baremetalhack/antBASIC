@@ -1,4 +1,4 @@
-0010 REM "ASCII Dump"
+0010 REM "=== ASCII Dump ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 @[1]=0

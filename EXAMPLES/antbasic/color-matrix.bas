@@ -1,4 +1,4 @@
-0010 REM "Color Matrix"
+0010 REM "=== Color Matrix ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 REM @=" HELLO! "

@@ -1,4 +1,4 @@
-0100 REM "Letter to Emoji"
+0100 REM "=== Letter to Emoji ==="
 0110 REM "BAREMETALHACK.COM --> Public domain"
 0120 :
 0130 DIM S[512]

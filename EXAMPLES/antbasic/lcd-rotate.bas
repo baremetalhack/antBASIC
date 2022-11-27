@@ -1,4 +1,4 @@
-0010 REM "LCD Rotate Screen"
+0010 REM "=== LCD Rotate Screen ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 GOSUB 5100:REM "Startup"

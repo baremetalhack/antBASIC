@@ -1,4 +1,4 @@
-0010 REM "Emoji Smiles"
+0010 REM "=== Emoji Smiles ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 @="😀":REM "UTF-8 is 0xF0,0x9F,0x98,0x80"

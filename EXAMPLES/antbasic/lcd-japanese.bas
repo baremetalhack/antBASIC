@@ -1,4 +1,4 @@
-0010 REM "LCD Japanese Codes"
+0010 REM "=== LCD Japanese Codes ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 GOSUB 5100:REM "Setup"

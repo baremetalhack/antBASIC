@@ -1,4 +1,4 @@
-0010 REM "Invader Marathon"
+0010 REM "=== Invader Marathon ==="
 0020 REM "BAREMETALHACK.COM --> Public domain"
 0030 :
 0040 PRINT "Distance ";:INPUT D
