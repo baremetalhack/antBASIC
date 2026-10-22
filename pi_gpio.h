@@ -95,7 +95,7 @@
    int gpio_in(int);
    int gpio_out(int, int);
    int gpio_outhz(int, int, int);
-char * gpio_result(int);
+ char *gpio_result(int);
   void gpio_usleep(int);
 
 #endif // _PI_GPIO_H

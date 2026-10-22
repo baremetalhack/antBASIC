@@ -36,6 +36,6 @@
   void eval_dim(dim_t *);
   void eval_assign(int);
 word_t eval(void);
-char * eval_result(int);
+ char *eval_result(int);
 
 #endif // _EVAL_H_

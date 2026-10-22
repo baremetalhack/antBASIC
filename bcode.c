@@ -142,7 +142,9 @@ bcode_read(bcode_t *b)
     }
 }
 
-int bcode_compile(byte_t *start) {
+int
+bcode_compile(byte_t *start)
+{
     byte_t *bptr, *lptr, *sptr;
     int len, ret;
     token_t tok;
@@ -231,7 +233,7 @@ bcode_display(bcode_t *b)
     else if (b->type == BCODE_TYPE_NUMBER16)
         fprintf(Debug, "0x%04hX (%d)\n", b->num, b->num);
     else if (b->type == BCODE_TYPE_STRING)
-        fprintf(Debug, "\"%s\"\n", (char*) b->str);
+        fprintf(Debug, "\"%s\"\n", (char *) b->str);
     else if (b->type == BCODE_TYPE_VARIABLE)
         fprintf(Debug, "%c\n", 'A' + b->idx);
     else if (b->type == BCODE_TYPE_KEYWORD)

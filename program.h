@@ -70,7 +70,7 @@ extern int Pnum;
    int prog_insert(int, byte_t *, int);
   void prog_cmdline(byte_t *, int);
    int prog_renum(int, int);
-char * prog_result(int);
+ char *prog_result(int);
   void prog_dumpbytes(void);
   void prog_dumplines(void);
 

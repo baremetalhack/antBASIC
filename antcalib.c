@@ -2,14 +2,18 @@
 #include <sys/time.h>       // *_t, timeval{}, gettimeofday()
 #include <stdlib.h>         // atoi()
 
-void microsec_wait(int count) {
+void
+microsec_wait(int count)
+{
     volatile int i;
 
     for (i = 0; i < count; i++) {
     };
 }
 
-int main(int argc, char* argv[]) {
+int
+main(int argc, char *argv[])
+{
     struct timeval start, end;
     time_t sec;
     suseconds_t usec;

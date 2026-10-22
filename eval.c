@@ -94,7 +94,8 @@ eval_dim(dim_t *dim)
 //     var != 0 -> assign to variable/array (index = var - 1) 
 
 void
-eval_assign(int var) {
+eval_assign(int var)
+{
     bcode_t b;
     byte_t *src, *dst;
     word_t val, idx;
@@ -431,7 +432,9 @@ level_five(void)
     return first;
 }
 
-word_t eval(void) {
+word_t
+eval(void)
+{
     word_t res;
 
     bcode_read(&Bcode);

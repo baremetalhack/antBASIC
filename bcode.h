@@ -186,7 +186,7 @@ typedef struct {
     int bcode_twoahead(void);
    void bcode_read(bcode_t *);
     int bcode_compile(byte_t *);
- char * bcode_result(int);
+  char *bcode_result(int);
 
 #ifdef DEBUG
    void bcode_display(bcode_t *);

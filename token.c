@@ -475,7 +475,8 @@ search_table(table_t *tbl, char *key)
     return -1;
 }
 
-static int keyword(token_t *tok)
+static int
+keyword(token_t *tok)
 {
     int cnt, idx;
     char key[ TOKEN_MAXKEY + 1 ], *ptr;

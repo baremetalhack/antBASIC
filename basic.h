@@ -101,6 +101,6 @@ extern char Text[];             // Source text line buffer
    int basic_command(int);
    int basic_load(char *);
    int basic_exec(void);
-char * basic_result(int);
+ char *basic_result(int);
 
 #endif  // _BASIC_H_

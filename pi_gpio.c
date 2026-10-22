@@ -130,7 +130,7 @@ gpio_term(void)
     Gpio_base[ UPDN0 ] = Save_gpio_updn0;
     Gpio_base[ UPDN1 ] = Save_gpio_updn1;
 
-    munmap((void*) Gpio_base, GPIO_PAGESIZE);
+    munmap((void *) Gpio_base, GPIO_PAGESIZE);
 }
 
 int

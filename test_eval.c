@@ -8,7 +8,9 @@
 FILE *Debug;
 jmp_buf Recovery;
 
-int main() {
+int
+main()
+{
     char buffer[ 256 ], *ptr;
     byte_t bytes[ 256 ];
     int ret;

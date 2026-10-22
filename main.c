@@ -82,7 +82,8 @@ location(void)
 }
 
 static int
-is_command(int inst) {
+is_command(int inst)
+{
     switch (inst) {
         case BCODE_CLEAR:
         case BCODE_CLS:
@@ -148,7 +149,7 @@ main(int argc, char *argv[])
         if (argc >= 4)                  // --- Second number argument is specified
             Var[ 1 ] = atoi(argv[ 3 ]); // --- Store the value in variable 'B'
         if (argc >= 5) {                // --- String argument is specified
-            strncpy((char*) String, (const char*) argv[ 4 ], CONT_MAXSTRING - 1);
+            strncpy((char *) String, (const char *) argv[ 4 ], CONT_MAXSTRING - 1);
             String[ CONT_MAXSTRING - 1 ] = 0;   // strncpy() does not guarantee NUL
         }                               // --- Store the value in string array '@'
         if ((ret = sigsetjmp(IntRecovery, 1)) != 0) {   // --- must precede basic_load()

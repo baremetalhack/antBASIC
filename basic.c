@@ -68,7 +68,7 @@ static char * Results[] = {
     "BASIC \"syntax error\""            // BASIC_SYNTAXERROR
 };
 
-static char* help_container[] = {
+static char *help_container[] = {
     "CONTAINERS",     "",
     "Numbers",        "Signed 16bit integer (range from -32768 to 32767)$" \
                       "Decimal or hexadecimal (0x prefix is needed)$" \
@@ -87,7 +87,7 @@ static char* help_container[] = {
     0
 };
 
-static char* help_operator[] = {
+static char *help_operator[] = {
     "OPERATORS",      "Precedence (high to low)",
     "Unary",          "-xxx, +xxx",
     "Mul/Div/Mod",    "*, /, %",
@@ -97,7 +97,7 @@ static char* help_operator[] = {
     0
 };
 
-static char* help_statement[] = {
+static char *help_statement[] = {
     "STATEMENTES",    "",
     "CLS",            "Clear screen",
     "COLOR",          "Define color attribute$" \
@@ -138,7 +138,7 @@ static char* help_statement[] = {
     0
 };
 
-static char* help_command[] = {
+static char *help_command[] = {
     "COMMANDS",       "",
     "CLEAR",          "Clear containers",
     "CLS",            "Clear screen",

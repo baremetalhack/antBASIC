@@ -172,9 +172,9 @@ typedef struct {
   void token_init(void);
   void token_source(char *);
    int token_read(token_t *);
-char * token_keyword(int);
-char * token_delimiter(int);
-char * token_result(int);
+ char *token_keyword(int);
+ char *token_delimiter(int);
+ char *token_result(int);
 
 #ifdef DEBUG
 void token_dump(token_t *);
