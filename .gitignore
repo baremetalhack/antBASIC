@@ -1,0 +1,13 @@
+# build products (see Makefile: clean / dist-clean)
+antbasic
+antcalib
+test_token
+test_bcode
+test_prog
+test_eval
+test_assign
+*.o
+
+# patch artefacts
+*.orig
+*.rej

@@ -109,7 +109,6 @@ void
 bcode_read(bcode_t *b)
 {
     int len;
-    word_t *ptr;
 
     b->pos = Pc;
     b->inst = Code[ Pc ];
@@ -131,8 +130,7 @@ bcode_read(bcode_t *b)
     switch (b->type) {
         case BCODE_TYPE_NUMBER10:
         case BCODE_TYPE_NUMBER16:
-            ptr = (word_t*) &Code[ Pc ];
-            b->num = *ptr;
+            b->num = (word_t) (Code[ Pc ] | (Code[ Pc + 1 ] << 8));  // little endian, no alignment assumption
             Pc += 2;
             break;
 

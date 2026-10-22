@@ -10,7 +10,5 @@
 // SIGINT handler defined in "main.c"
 
 void sigint_register(void);
-void sigint_edit_register(void);
-int  sigint_edit_abort(void);
 
 #endif  // _SIGINT_H_

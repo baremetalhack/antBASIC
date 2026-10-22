@@ -4,6 +4,7 @@
 //  BAREMETALHACK.COM --> public domain
 //
 
+#include <stdio.h>          // FILE{}, fprintf()
 #include "program.h"
 #include "bcode.h"
 #include "escape.h"
@@ -85,7 +86,7 @@ prog_search(int linenum)
 }
 
 static void
-spacing(int fd)
+spacing(FILE *fp)
 {
     if (bcode_nextiseol())
         return;
@@ -93,11 +94,11 @@ spacing(int fd)
         if (bcode_next() != BCODE_AT)
             return;
     }
-    dprintf(fd, " ");
+    fprintf(fp, " ");
 }
 
 int
-prog_list(int fd, int color, int startnum, int endnum)
+prog_list(FILE *fp, int color, int startnum, int endnum)
 {
     int sidx, eidx, i, loop;
     bcode_t b;
@@ -115,7 +116,7 @@ prog_list(int fd, int color, int startnum, int endnum)
 
     bcode_start(Program);
     for (i = sidx; i <= eidx; i++) {
-        dprintf(fd, "%04d ", Lines[ i ].num);
+        fprintf(fp, "%04d ", Lines[ i ].num);
         bcode_setpc(Lines[ i ].add);
         loop = 1;
         while (loop) {
@@ -126,20 +127,20 @@ prog_list(int fd, int color, int startnum, int endnum)
                     break;
 
                 case BCODE_TYPE_NUMBER10:
-                    dprintf(fd, "%d", b.num);
-                    spacing(fd);
+                    fprintf(fp, "%d", b.num);
+                    spacing(fp);
                     break;
 
                 case BCODE_TYPE_NUMBER16:
                     if (b.num & 0xFF00)
-                        dprintf(fd, "0x%04hX", b.num);
+                        fprintf(fp, "0x%04hX", b.num);
                     else
-                        dprintf(fd, "0x%02hX", b.num);
-                    spacing(fd);
+                        fprintf(fp, "0x%02hX", b.num);
+                    spacing(fp);
                     break;
 
                 case BCODE_TYPE_STRING:
-                    dprintf(fd, "\"");
+                    fprintf(fp, "\"");
                     ptr = b.str;
                     while ((ch = *ptr++)) {
                         esc = 0;
@@ -180,46 +181,46 @@ prog_list(int fd, int color, int startnum, int endnum)
                         }
                         if (esc) {
                             if (esc == 'x')
-                                dprintf(fd, "\\x%02X", ch);
+                                fprintf(fp, "\\x%02X", ch);
                             else
-                                dprintf(fd, "\\%c", esc);
+                                fprintf(fp, "\\%c", esc);
                         } else
-                            dprintf(fd, "%c", ch);
+                            fprintf(fp, "%c", ch);
                     }
-                    dprintf(fd, "\"");
+                    fprintf(fp, "\"");
                     break;
 
                 case BCODE_TYPE_VARIABLE:
                     if (color)
-                        dprintf(fd, ESCAPE_LBLUE);
-                    dprintf(fd, "%c", b.idx + 'A');
+                        fprintf(fp, ESCAPE_LBLUE);
+                    fprintf(fp, "%c", b.idx + 'A');
                     if (color)
-                        dprintf(fd, ESCAPE_DEFAULT);
-                    spacing(fd);
+                        fprintf(fp, ESCAPE_DEFAULT);
+                    spacing(fp);
                     break;
 
                 case BCODE_TYPE_KEYWORD:
                     if (color)
-                        dprintf(fd, ESCAPE_LGREEN);
-                    dprintf(fd, "%s", token_keyword(b.idx));
+                        fprintf(fp, ESCAPE_LGREEN);
+                    fprintf(fp, "%s", token_keyword(b.idx));
                     if (color)
-                        dprintf(fd, ESCAPE_DEFAULT);
-                    spacing(fd);
+                        fprintf(fp, ESCAPE_DEFAULT);
+                    spacing(fp);
                     break;
 
                 case BCODE_TYPE_DELIMITER:
                     if (color && b.inst == BCODE_AT)
-                        dprintf(fd, ESCAPE_LBLUE);
-                    dprintf(fd, "%s", token_delimiter(b.idx));
+                        fprintf(fp, ESCAPE_LBLUE);
+                    fprintf(fp, "%s", token_delimiter(b.idx));
                     if (color && b.inst == BCODE_AT)
-                        dprintf(fd, ESCAPE_DEFAULT);
+                        fprintf(fp, ESCAPE_DEFAULT);
                     if (b.inst == BCODE_RPAREN || b.inst == BCODE_RBRACK)
                         if (! bcode_nextisdlm() && ! bcode_nextiseol())
-                            dprintf(fd, " ");
+                            fprintf(fp, " ");
                     break;
             }
         }
-        dprintf(fd, "\n");
+        fprintf(fp, "\n");
     }
     return PROG_SUCCESS;
 }
@@ -298,7 +299,7 @@ prog_insert(int linenum, byte_t *src, int len)
     for (i = 1; i < idx; i++) {
         start += Lines[ i ].len;
     }
-    move = Psize - start + 1;
+    move = Psize - start;       // bytes to shift: Program[start .. Psize-1]
     dst = &Program[ start ];
 
     if (idx != (Lsize + 1)) {
@@ -368,7 +369,8 @@ prog_renum(int start, int step)
                     break;
 
                 case BCODE_TYPE_KEYWORD:
-                    if (b.inst == BCODE_GOSUB || b.inst == BCODE_GOTO) {
+                    if ((b.inst == BCODE_GOSUB || b.inst == BCODE_GOTO) \
+                            && bcode_nextisnum()) {     // skip GOTO X (computed)
                         bcode_read(&b);
                         idx = prog_search(b.num);
                         if (idx < 0)
@@ -394,7 +396,8 @@ prog_renum(int start, int step)
     for (i = 0; i < Rsize; i++) {
         ptr = &Program[ Relocs[ i ].add ];
         ptr++;
-        *((word_t*) ptr) = (word_t) Lines[ Relocs[ i ].idx ].num;
+        ptr[ 0 ] = Lines[ Relocs[ i ].idx ].num & 0xFF;         // little endian,
+        ptr[ 1 ] = (Lines[ Relocs[ i ].idx ].num >> 8) & 0xFF;  // no alignment assumption
     }
 
     return PROG_SUCCESS;

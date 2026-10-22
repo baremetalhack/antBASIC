@@ -27,7 +27,8 @@
 //
 
 FILE *Debug;
-jmp_buf IntRecovery, EvalRecovery, BasicRecovery;
+sigjmp_buf IntRecovery;
+jmp_buf EvalRecovery, BasicRecovery;
 int Verbose = 1;
 
 //
@@ -47,35 +48,11 @@ welcome(void)
     }
 }
 
-static int volatile sigint_edit_flag = 0;
-
 static void
-sigint_edit_handler()
+sigint_handler(int sig)
 {
-    sigint_edit_flag = 1;
-}
-
-int
-sigint_edit_abort(void) {
-    return sigint_edit_flag;
-}
-
-void
-sigint_edit_register(void)
-{
-    struct sigaction act;
-
-    act.sa_handler = sigint_edit_handler;
-    sigemptyset(&act.sa_mask);
-    act.sa_flags = 0;
-    sigint_edit_flag = 0;
-    sigaction(SIGINT, &act, NULL);
-}
-
-static void
-sigint_handler()
-{
-    longjmp(IntRecovery, 1);
+    (void) sig;
+    siglongjmp(IntRecovery, 1);     // siglongjmp restores the signal mask
 }
 
 void
@@ -85,7 +62,8 @@ sigint_register(void)
 
     act.sa_handler = sigint_handler;
     sigemptyset(&act.sa_mask);
-    act.sa_flags = SA_RESETHAND | SA_NODEFER;
+    act.sa_flags = 0;               // no SA_RESETHAND: handler stays installed,
+                                    // so a 2nd ^C right after the 1st cannot kill us
     sigaction(SIGINT, &act, NULL);
 }
 
@@ -98,7 +76,7 @@ location(void)
     else if (Mode == BASIC_MODEDIRECT) {
         if (Pnum)
             printf(" in line %d", Pnum);
-    } else
+    } else if (Lnum)
         printf(" in line %d", Lnum);
     printf("%s\n", ESCAPE_DEFAULT);
 }
@@ -169,17 +147,18 @@ main(int argc, char *argv[])
             Var[ 0 ] = atoi(argv[ 2 ]); // --- Store the value in variable 'A'
         if (argc >= 4)                  // --- Second number argument is specified
             Var[ 1 ] = atoi(argv[ 3 ]); // --- Store the value in variable 'B'
-        if (argc >= 5)                  // --- String argument is specified
-            strncpy((char*) String, (const char*) argv[ 4 ], CONT_MAXSTRING); 
-                                        // --- Store the value in string array '@'
+        if (argc >= 5) {                // --- String argument is specified
+            strncpy((char*) String, (const char*) argv[ 4 ], CONT_MAXSTRING - 1);
+            String[ CONT_MAXSTRING - 1 ] = 0;   // strncpy() does not guarantee NUL
+        }                               // --- Store the value in string array '@'
+        if ((ret = sigsetjmp(IntRecovery, 1)) != 0) {   // --- must precede basic_load()
+            printf("\n%santBASIC: user aborted%s\n", ESCAPE_LRED, ESCAPE_DEFAULT);
+            return 2;
+        }
         ret = basic_load(argv[ 1 ]);    // --- Load the program
         if (ret) {
             printf("%santBASIC: load error%s\n", ESCAPE_LRED, ESCAPE_DEFAULT);
             return 1;
-        }
-        if ((ret = setjmp(IntRecovery)) != 0) {
-            printf("\n%santBASIC: user aborted%s\n", ESCAPE_LRED, ESCAPE_DEFAULT);
-            return 2;
         }
         if ((ret = setjmp(EvalRecovery)) != 0) {
             printf("%santBASIC: eval() error%s\n", ESCAPE_LRED, ESCAPE_DEFAULT);
@@ -196,14 +175,13 @@ main(int argc, char *argv[])
 
     // Error handler
 
-    if ((ret = setjmp(IntRecovery)) != 0) {
+    if ((ret = sigsetjmp(IntRecovery, 1)) != 0) {
         if (Lnum) {
-            printf("\n%sAborted ", ESCAPE_LRED);
+            printf("\n%sAborted", ESCAPE_LRED);
             location();
             Lnum = 0;
         } else
             printf("\n");
-        sigint_register();
     }
     if ((ret = setjmp(EvalRecovery)) != 0) {
         printf("%sError: %s", ESCAPE_LRED, eval_result(ret));
@@ -235,7 +213,10 @@ main(int argc, char *argv[])
         printf("\e[0;0m");          // Reset screen attributes
         Mode = BASIC_MODEDIRECT;    // Enter direct mode
         Pnum = 0;
+        Lnum = 0;                   // Forget the line number of the last run
         ret = basic_readline("> ", text, TOKEN_MAXBUF);
+        if (ret < 0)                // EOF (^D or end of redirected input)
+            break;
         if (ret == 0)
             continue;
         token_source(text);

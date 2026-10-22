@@ -23,7 +23,7 @@ static volatile uint32_t *Gpio_base;
 static uint32_t Save_gpio_fsel0, Save_gpio_fsel1, Save_gpio_fsel2;
 static uint32_t Save_gpio_set0, Save_gpio_clr0;
 static uint32_t Save_gpio_updn0, Save_gpio_updn1;
-static int States[ GPIO_BITS ];
+static int States[ GPIO_BITS + 1 ];     // indexed by BMH number 1..GPIO_BITS
 static int Microsec;
 
 // Bitmapping array: converts from re-arranged BMH (Bare Metal Hacking) number to
@@ -89,7 +89,7 @@ gpio_init(void)
             return GPIO_SOCUNKNOWN;
     };
 
-    fd = open(GPIO_PAGEPATH, O_RDWR, O_SYNC, O_CLOEXEC);
+    fd = open(GPIO_PAGEPATH, O_RDWR | O_SYNC | O_CLOEXEC);  // flags are OR'ed, not separate args
     if (fd < 0)
         return GPIO_OPENFAIL;
 
@@ -99,7 +99,7 @@ gpio_init(void)
     if (Gpio_base == MAP_FAILED)
         return GPIO_OPENFAIL;
 
-    for (i = 0; i < GPIO_BITS; i++)
+    for (i = 0; i <= GPIO_BITS; i++)
         States[ i ] = GPIO_UNSPECIFIED;
 
     Save_gpio_fsel0 = Gpio_base[ FSEL0 ];
@@ -230,6 +230,8 @@ gpio_in(int bmh)
 {
     int ret;
 
+    if (bmh < 1 || bmh > GPIO_BITS)     // validate BEFORE indexing States[]
+        return GPIO_ILLBIT;
     if (States[ bmh ] == GPIO_INPUT)
         return gpio_bitread(bmh);
     else {
@@ -248,6 +250,8 @@ gpio_out(int bmh, int val)
 {
     int ret;
 
+    if (bmh < 1 || bmh > GPIO_BITS)     // validate BEFORE indexing States[]
+        return GPIO_ILLBIT;
     if (States[ bmh ] == GPIO_OUTPUT)
         return gpio_bitwrite(bmh, val);
     else {
@@ -266,6 +270,8 @@ gpio_outhz(int bmh, int val, int pull)
 {
     int ret, p;
 
+    if (bmh < 1 || bmh > GPIO_BITS)     // validate BEFORE indexing States[]
+        return GPIO_ILLBIT;
     if (val) {
         p = pull ? GPIO_REGUP : GPIO_REGNONE;
         ret = gpio_bitmode(bmh, GPIO_INPUT, p);

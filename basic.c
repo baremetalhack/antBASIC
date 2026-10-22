@@ -9,10 +9,7 @@
 #include <string.h>             // strlen(), strncpy()
 #include <stdlib.h>             // atoi(), free()
 #include <dirent.h>             // DIR{}, dirent{}, scandir()
-#include <unistd.h>             // usleep(), getpagesize(), ftruncate(), unlink(),
-                                // close(), STD*_FILENO
-#include <fcntl.h>              // open(), O_*
-#include <sys/mman.h>           // mmap(), munmap(), PROT_*, MAP_*
+#include <unistd.h>             // usleep()
 
 #ifdef READLINE
 #include <readline/readline.h>  // readline(), rl_*()
@@ -37,22 +34,22 @@
 // Global variable
 //
 
-int Lnum;                   // Current executing line number
-int Mode;                   // Current executing mode (NORMAL/DIRECT/LOAD/SHELL)
-int Status = 0;             // Exit status which will be returned to the shell
+ int Lnum;                  // Current executing line number
+ int Mode;                  // Current executing mode (NORMAL/DIRECT/LOAD/SHELL)
+ int Status = 0;            // Exit status which will be returned to the shell
 char Text[ TOKEN_MAXBUF ];  // Source text line buffer
 
 //
 // File scope variables
 //
 
-static jmp_buf *Exit;
-static int Lidx;
-static int Gsize, Fsize;
-static gstack_t Gstack[ BASIC_MAXSTACKDEPTH ];
-static fstack_t Fstack[ BASIC_MAXSTACKDEPTH ];
+static jmp_buf * Exit;
+      static int Lidx;
+      static int Gsize, Fsize;
+ static gstack_t Gstack[ BASIC_MAXSTACKDEPTH ];
+ static fstack_t Fstack[ BASIC_MAXSTACKDEPTH ];
 
-static char *Results[] = {
+static char * Results[] = {
     "BASIC \"ok\"",                     // BASIC_SUCCESS
     "BASIC \"direct exec is denied\"",  // BASIC_DIRECTDENY
     "BASIC \"directory not found\"",    // BASIC_DIRNOTFOUND
@@ -71,7 +68,7 @@ static char *Results[] = {
     "BASIC \"syntax error\""            // BASIC_SYNTAXERROR
 };
 
-static char *help_container[] = {
+static char* help_container[] = {
     "CONTAINERS",     "",
     "Numbers",        "Signed 16bit integer (range from -32768 to 32767)$" \
                       "Decimal or hexadecimal (0x prefix is needed)$" \
@@ -90,7 +87,7 @@ static char *help_container[] = {
     0
 };
 
-static char *help_operator[] = {
+static char* help_operator[] = {
     "OPERATORS",      "Precedence (high to low)",
     "Unary",          "-xxx, +xxx",
     "Mul/Div/Mod",    "*, /, %",
@@ -100,7 +97,7 @@ static char *help_operator[] = {
     0
 };
 
-static char *help_statement[] = {
+static char* help_statement[] = {
     "STATEMENTES",    "",
     "CLS",            "Clear screen",
     "COLOR",          "Define color attribute$" \
@@ -141,7 +138,7 @@ static char *help_statement[] = {
     0
 };
 
-static char *help_command[] = {
+static char* help_command[] = {
     "COMMANDS",       "",
     "CLEAR",          "Clear containers",
     "CLS",            "Clear screen",
@@ -167,7 +164,9 @@ static char *help_command[] = {
 // Initializer
 //
 
-void basic_init(jmp_buf *env) {
+void
+basic_init(jmp_buf *env)
+{
     Exit = env;
     Lnum = Lidx = Gsize = Fsize = 0;
 }
@@ -176,36 +175,38 @@ void basic_init(jmp_buf *env) {
 // Helper functions
 //
 
-void basic_error(int code) {
+void
+basic_error(int code)
+{
     longjmp(*Exit, code);
 }
 
-// Returns length of the line (0 = empty, -1 = EOF)
-// NOTE: a line longer than (size -1) will be truncated.
+// Returns: length of the line (0 = empty line), -1 = EOF
+// NOTE: a line longer than (size - 1) characters is truncated.
 
-int basic_readline(char *msg, char *buf, int size) {
+int
+basic_readline(char *msg, char *buf, int size)
+{
     char *ptr;
     int len;
 
 #ifdef READLINE
     ptr = readline(msg);
-    if (ptr == NULL) {
+    if (ptr == NULL) {          // EOF (^D)
         buf[ 0 ] = 0;
         return -1;
     }
-    len = snprintf(buf, size, "%s", ptr);    // Null termination is guaranteed.
-    if (len >= size) {
+    len = snprintf(buf, size, "%s", ptr);   // always NUL terminated
+    if (len >= size)
         len = size - 1;
-    }
-    if (len > 0) {
-        add_history(ptr);
-    }
+    if (len > 0)
+        add_history(ptr);       // do not record empty lines
     free(ptr);
 #else
     printf("%s", msg);
     fflush(stdout);
     ptr = fgets(buf, size, stdin);
-    if (ptr == NULL)
+    if (ptr == NULL) {          // EOF
         buf[ 0 ] = 0;
         return -1;
     }
@@ -225,7 +226,9 @@ int basic_readline(char *msg, char *buf, int size) {
 // BASIC statements
 //
 
-static void stat_rem(void) {
+static void
+stat_rem(void)
+{
     bcode_t b;
 
     while (bcode_next() != BCODE_EOL) {
@@ -234,7 +237,9 @@ static void stat_rem(void) {
     DMSG(">>> %05d REM", Lnum);
 }
 
-static int stat_end(void) {
+static int
+stat_end(void)
+{
     bcode_t b;
     word_t num;
 
@@ -249,7 +254,9 @@ static int stat_end(void) {
     return num;
 }
 
-static void stat_dim(void) {
+static void
+stat_dim(void)
+{
     bcode_t b;
     int v;
     dim_t size;
@@ -281,7 +288,9 @@ static void stat_dim(void) {
     }
 }
 
-static void stat_print(void) {
+static void
+stat_print(void)
+{
     bcode_t b;
     int pos = 0, len, sp, newline = 1;
     word_t res;
@@ -350,7 +359,9 @@ static void stat_print(void) {
     DMSG(">>> %05d PRINT <<<", Lnum);
 }
 
-static void stat_input(void) {
+static void
+stat_input(void)
+{
     int len;
     bcode_t b;
     word_t val;
@@ -363,18 +374,19 @@ static void stat_input(void) {
     } else if (bcode_nextisvar()) {
         bcode_read(&b);
         len = basic_readline("? ", buff, BASIC_MAXLINECHAR);
-        if (len <= 0) {     // empty line or EOF
-            val = 0; 
-        } else {
+        if (len <= 0)               // empty line or EOF
+            val = 0;
+        else
             val = (word_t) atoi(buff);
-        }
         Var[ b.idx ] = val;
         DMSG(">>> %05d INPUT %c = %d\n", Lnum, 'A' + b.idx, val);
     } else
         basic_error(BASIC_NOVARIABLE);
 }
 
-static int stat_goto(void) {
+static int
+stat_goto(void)
+{
     bcode_t b;
     word_t num = 0;
 
@@ -387,7 +399,9 @@ static int stat_goto(void) {
     return num;
 }
 
-static int stat_gosub(void) {
+static int
+stat_gosub(void)
+{
     bcode_t b;
     word_t num = 0;
 
@@ -406,7 +420,9 @@ static int stat_gosub(void) {
     return num;
 }
 
-static void stat_return(void) {
+static void
+stat_return(void)
+{
     if (Gsize == 0)
         basic_error(BASIC_NOSTACK);
     else
@@ -414,7 +430,9 @@ static void stat_return(void) {
     DMSG(">>> %05d RETURN", Lnum);
 }
 
-static int stat_if(void) {
+static int
+stat_if(void)
+{
     word_t res;
 
     res = eval();
@@ -423,7 +441,9 @@ static int stat_if(void) {
     return res;
 }
 
-static void stat_for(void) {
+static void
+stat_for(void)
+{
     bcode_t b;
     int var;
     word_t start, end;
@@ -458,18 +478,24 @@ static void stat_for(void) {
             Lnum, Lidx, bcode_getpc(), var + 'A', start, end);
 }
 
-static void stat_next(void) {
+static void
+stat_next(void)
+{
     if (Fsize == 0)
         basic_error(BASIC_NOSTACK);
     DMSG(">>> %05d NEXT", Lnum);
 }
 
-static void stat_cls(void) {
+static void
+stat_cls(void)
+{
     printf(ESCAPE_HOME ESCAPE_CLS);
     DMSG(">>> %05d CLS", Lnum);
 }
 
-static void stat_color(void) {
+static void
+stat_color(void)
+{
     word_t fc = -1, bc = -1;
 
     if (bcode_next() != BCODE_LPAREN)
@@ -497,7 +523,9 @@ static void stat_color(void) {
     DMSG(">>> %05d COLOR(%d,%d)", Lnum, fc, bc);
 }
 
-static void stat_locate(void) {
+static void
+stat_locate(void)
+{
     word_t x, y;
 
     if (bcode_next() != BCODE_LPAREN)
@@ -516,7 +544,9 @@ static void stat_locate(void) {
     DMSG(">>> %05d LOCATE(%d,%d)", Lnum, x, y);
 }
 
-static void stat_usleep(void) {
+static void
+stat_usleep(void)
+{
     word_t val;
 
     if (bcode_next() != BCODE_LPAREN)
@@ -534,7 +564,9 @@ static void stat_usleep(void) {
     DMSG(">>> %05d USLEEP(%d)", Lnum, val);
 }
 
-static void stat_msleep(void) {
+static void
+stat_msleep(void)
+{
     word_t val;
 
     if (bcode_next() != BCODE_LPAREN)
@@ -549,7 +581,9 @@ static void stat_msleep(void) {
 }
 
 #ifdef PI
-static void stat_out(void) {
+static void
+stat_out(void)
+{
     word_t bit, val;
     int res;
 
@@ -572,7 +606,9 @@ static void stat_out(void) {
     DMSG(">>> %05d OUT(%d,%d)", Lnum, bit, val);
 }
 
-static void stat_outhz(void) {
+static void
+stat_outhz(void)
+{
     word_t bit, val, pull;
     int res;
 
@@ -605,7 +641,9 @@ static void stat_outhz(void) {
 //
 
 #define FIRSTCOLSIZE  14
-static void display_help(char **msg) {
+static void
+display_help(char **msg)
+{
     char *ptr;
     int cnt = 0, sp, i;
 
@@ -638,7 +676,9 @@ static void display_help(char **msg) {
     }
 }
 
-static void cmd_help(void) {
+static void
+cmd_help(void)
+{
     bcode_t b;
     int mode = 0;
     char buf[ 8 ], *ptr = buf;
@@ -713,14 +753,18 @@ static void cmd_help(void) {
     }
 }
 
-static void cmd_free(void) {
+static void
+cmd_free(void)
+{
     printf(ESCAPE_LBLUE);
     printf("%d lines, %d lines free\n", Lsize, PROG_MAXLINE - Lsize);
     printf("%d bytes used, %d bytes free\n", Psize, PROG_MAXSIZE - Psize);
     printf(ESCAPE_DEFAULT);
 }
 
-static void cmd_dump(void) {
+static void
+cmd_dump(void)
+{
     bcode_t b;
 
     if (bcode_nextisvar()) {
@@ -758,89 +802,65 @@ static void cmd_dump(void) {
     prog_dumplines();
 }
 
-static void cmd_new(void) {
+static void
+cmd_new(void)
+{
     prog_init();
     Lnum = Lidx = Gsize = Fsize = 0;
 }
 
-static void cmd_clear(void) {
+static void
+cmd_clear(void)
+{
     cont_init();
 }
 
 #ifdef READLINE
-static int line_flag;
-static char *line_ptr = NULL;
-static char line_buf[ BASIC_MAXLINECHAR ];
-static char line_fn[ 32 ];
-static int line_fd;
-static int line_psize;
-static char *line_map;
+// EDIT uses the ordinary readline() call with a startup hook that pre-fills
+// the edit buffer. ^C is therefore handled exactly like at the "> " prompt:
+// readline restores the terminal itself and re-raises SIGINT to our handler.
 
-static int line_setup(void) {
-    int ret;
+static char *line_initial;      // text to be inserted when readline() starts
 
-    line_psize = getpagesize();
-
-    strcpy(line_fn, "/tmp/antbasic-tmp-XXXXXX");
-    line_fd = mkstemp(line_fn);
-    if (line_fd < 0) {
-        return -1;
-    }
-    
-    ret = ftruncate(line_fd, line_psize);
-    if (ret < 0) {
-        close(line_fd);
-        return -2;
-    }
-
-    line_map = mmap(NULL, line_psize, PROT_READ | PROT_WRITE, MAP_PRIVATE, line_fd, 0);
-    if (line_map == MAP_FAILED) {
-        close(line_fd);
-        return -3;
+static int
+line_hook(void)
+{
+    rl_startup_hook = NULL;     // one-shot: even if ^C aborts this readline(),
+    if (line_initial) {         // the hook never fires again
+        rl_insert_text(line_initial);
+        line_initial = NULL;
     }
     return 0;
 }
 
-static void line_term(void) { close(line_fd);
-    unlink(line_fn);
-    munmap(line_map, line_psize);
-}
+// Render program line "num" to a text buffer (without the trailing newline)
 
-static void line_handler(char *line) {
-    line_ptr = line;
-    line_flag = 0;
-}
+static int
+line_fetch(int num, char *buf, int size)
+{
+    FILE *fp;
+    char *mem = NULL;
+    size_t len = 0;
+    int ret;
 
-static char *line_edit(char *prompt, char *src) {
-    int abort = 0;
-
-    sigint_edit_register();
-    rl_callback_handler_install(prompt, &line_handler);
-    rl_insert_text(src);
-    rl_redisplay ();
-
-    line_flag = 1;
-    while (line_flag) {
-        rl_callback_read_char();
-        if (sigint_edit_abort()) {
-            abort = 1;
-            break;
-        }
+    fp = open_memstream(&mem, &len);
+    if (fp == NULL)
+        return -1;
+    ret = prog_list(fp, PROG_LISTPLAIN, num, num);
+    fclose(fp);
+    if (ret == 0) {
+        if (len > 0 && mem[ len - 1 ] == '\n')
+            mem[ len - 1 ] = 0;
+        snprintf(buf, size, "%s", mem);
     }
-    rl_callback_handler_remove();
-    if (abort) {
-        sigint_register();
-        return NULL;
-    } else {
-        strncpy(line_buf, line_ptr, sizeof(line_buf));
-        free(line_ptr);
-        sigint_register();
-        return line_buf;
-    }
+    free(mem);
+    return ret;
 }
 #endif
 
-static void cmd_edit(void) {
+static void
+cmd_edit(void)
+{
 #ifndef READLINE
     printf("%sError: EDIT command needs GNU Readline Library.%s\n",
         ESCAPE_LRED, ESCAPE_DEFAULT);
@@ -848,7 +868,7 @@ static void cmd_edit(void) {
 #else
     bcode_t b;
     int num, ret, len;
-    char buf[ BASIC_MAXLINECHAR ], *ptr;
+    char src[ BASIC_MAXLINECHAR ], buf[ BASIC_MAXLINECHAR ], *ptr;
     byte_t cmd[ BCODE_MAXSIZE ];
 
     if (bcode_next() != BCODE_NUMBER10)
@@ -859,20 +879,19 @@ static void cmd_edit(void) {
     if (ret < 0)
         basic_error(BASIC_NOLINENUM);
 
-    ret = line_setup();
+    ret = line_fetch(num, src, sizeof(src));
     if (ret < 0)
         basic_error(BASIC_FILEIOERROR);
-    ret = prog_list(line_fd, PROG_LISTPLAIN, num, num);
-    len = strlen(line_map);
-    line_map[ len - 1 ] = 0;
-    strncpy(buf, line_map, BASIC_MAXLINECHAR);
-    line_term();
+    else if (ret > 0)
+        basic_error(ret | BASIC_PROG_ERROR);
 
-    printf("%sTo abort editing, press ^C followed by Enter.%s\n", ESCAPE_LMAGENTA, ESCAPE_DEFAULT);
-    ptr = line_edit("> ", buf);
-    if (ptr == NULL) {
+    printf("%sTo abort editing, press ^C.%s\n", ESCAPE_LMAGENTA, ESCAPE_DEFAULT);
+    line_initial = src;
+    rl_startup_hook = line_hook;
+    len = basic_readline("> ", buf, sizeof(buf));
+    if (len <= 0)
         return;
-    }
+    ptr = buf;
     while (*ptr == ' ')
         ptr++;
     if (*ptr == 0)
@@ -906,7 +925,9 @@ static void cmd_edit(void) {
 #endif
 }
 
-static void cmd_list(void) {
+static void
+cmd_list(void)
+{
     bcode_t b;
     int start, end, ret;
 
@@ -930,12 +951,14 @@ static void cmd_list(void) {
         }
     } else if (bcode_next() != BCODE_EOL)
         basic_error(BASIC_ILLRANGE);
-    ret = prog_list(STDOUT_FILENO, PROG_LISTCOLOR, start, end);
+    ret = prog_list(stdout, PROG_LISTCOLOR, start, end);
     if (ret)
         basic_error(ret | BASIC_PROG_ERROR);
 }
 
-static void cmd_renum(void) {
+static void
+cmd_renum(void)
+{
     bcode_t b;
     int start = 0, step = 0, ret;
 
@@ -968,7 +991,9 @@ static void cmd_renum(void) {
         basic_error(ret | BASIC_PROG_ERROR);
 }
 
-static void cmd_delete(void) {
+static void
+cmd_delete(void)
+{
     bcode_t b;
     int start = 0, end = 0, ret;
 
@@ -995,7 +1020,9 @@ static void cmd_delete(void) {
         basic_error(ret | BASIC_PROG_ERROR);
 }
 
-static void cmd_files(void) {
+static void
+cmd_files(void)
+{
     bcode_t b;
     struct dirent **list;
     char *dir;
@@ -1010,25 +1037,28 @@ static void cmd_files(void) {
         dir = (char *) b.str;
     }
     cnt = scandir(dir, &list, NULL, alphasort);
-    if (cnt == 0)
+    if (cnt < 0)                            // scandir() returns -1 on error
         basic_error(BASIC_DIRNOTFOUND);
 
     for (i = 0; i < cnt; i++) {
-        if (list[ i ]->d_name[0] == '.')
-            continue;
-        if (list[ i ]->d_type == DT_DIR) {
-            printf(ESCAPE_LGREEN);
-            printf("%s/\n", list[ i ]->d_name);
-        } else {
-            printf(ESCAPE_LBLUE);
-            printf("%s\n", list[ i ]->d_name);
+        if (list[ i ]->d_name[0] != '.') {
+            if (list[ i ]->d_type == DT_DIR) {
+                printf(ESCAPE_LGREEN);
+                printf("%s/\n", list[ i ]->d_name);
+            } else {
+                printf(ESCAPE_LBLUE);
+                printf("%s\n", list[ i ]->d_name);
+            }
         }
+        free(list[ i ]);                    // each entry is malloc()ed
     }
     printf(ESCAPE_DEFAULT);
     free(list);
 }
 
-static void cmd_load(void) {
+static void
+cmd_load(void)
+{
     bcode_t b;
     FILE *src;
     char *ptr;
@@ -1050,8 +1080,10 @@ static void cmd_load(void) {
         if (ptr == NULL)
             break;
         while (*ptr) {
-            if (*ptr == '\n')
+            if (*ptr == '\n') {
                 *ptr = 0;
+                break;
+            }
             ptr++;
         }
         token_source(Text);
@@ -1062,6 +1094,8 @@ static void cmd_load(void) {
             basic_error(size | BASIC_BCODE_ERROR);
         }
         bcode_start(code);
+        if (bcode_nextiseol())          // skip blank lines
+            continue;
         if (! bcode_nextisnum()) {
             fclose(src);
             basic_error(BASIC_NOLINENUM);
@@ -1079,7 +1113,9 @@ static void cmd_load(void) {
     printf("%d lines loaded\n", Lsize);
 }
 
-static void cmd_merge(void) {
+static void
+cmd_merge(void)
+{
     bcode_t b;
     FILE *src;
     char *ptr;
@@ -1101,8 +1137,10 @@ static void cmd_merge(void) {
         if (ptr == NULL)
             break;
         while (*ptr) {
-            if (*ptr == '\n')
+            if (*ptr == '\n') {
                 *ptr = 0;
+                break;
+            }
             ptr++;
         }
         token_source(Text);
@@ -1113,6 +1151,8 @@ static void cmd_merge(void) {
             basic_error(size | BASIC_BCODE_ERROR);
         }
         bcode_start(code);
+        if (bcode_nextiseol())          // skip blank lines
+            continue;
         if (! bcode_nextisnum()) {
             fclose(src);
             basic_error(BASIC_NOLINENUM);
@@ -1131,32 +1171,40 @@ static void cmd_merge(void) {
     printf("%d lines merged\n", cnt);
 }
 
-static void cmd_save(void) {
+static void
+cmd_save(void)
+{
     bcode_t b;
-    int fd, ret;
+    FILE *fp;
+    int ret;
 
     if (! bcode_nextisstr())
         basic_error(BASIC_NOFILENAME);
     bcode_read(&b);
     DMSG("Saving file \"%s\"\n", b.str);
-    fd = open((char *) b.str, O_CREAT | O_RDWR, 0666);
-    if (fd < 0)
+    fp = fopen((char *) b.str, "w");        // "w" truncates an existing file
+    if (fp == NULL)
         basic_error(BASIC_FILEIOERROR);
-    ret = prog_list(fd, PROG_LISTPLAIN, Lines[ 1 ].num, Lines[ Lsize ].num);
+    ret = prog_list(fp, PROG_LISTPLAIN, Lines[ 1 ].num, Lines[ Lsize ].num);
     if (ret) {
-        close(fd);
+        fclose(fp);
         basic_error(ret | BASIC_PROG_ERROR);
     }
-    close(fd);
+    if (fclose(fp) != 0)
+        basic_error(BASIC_FILEIOERROR);
     printf("%d lines saved\n", Lsize);
 }
 
-static void deny_direct(void) {
+static void
+deny_direct(void)
+{
     if (Mode == BASIC_MODEDIRECT)
         basic_error(BASIC_DIRECTDENY);
 }
 
-int basic_load(char *fname) {
+int
+basic_load(char *fname)
+{
     bcode_t b;
     FILE *src;
     char *ptr;
@@ -1174,8 +1222,10 @@ int basic_load(char *fname) {
         if (ptr == NULL)
             break;
         while (*ptr) {
-            if (*ptr == '\n')
+            if (*ptr == '\n') {
                 *ptr = 0;
+                break;
+            }
             ptr++;
         }
         token_source(Text);
@@ -1186,6 +1236,8 @@ int basic_load(char *fname) {
             return 2;       // 2: Bytecode compile error
         }
         bcode_start(code);
+        if (bcode_nextiseol())          // skip blank lines
+            continue;
         if (! bcode_nextisnum()) {
             fclose(src);
             return 3;       // 3: Line number undefined
@@ -1203,9 +1255,11 @@ int basic_load(char *fname) {
     return 0;
 }
 
-int basic_exec(void) {
+int
+basic_exec(void)
+{
     bcode_t b;
-    int line, jump = 0, back = 0, skip = 0, newpc, var;
+    int line = 0, jump = 0, back = 0, skip = 0, newpc = 0, var;
 
     if (Mode == BASIC_MODEDIRECT)
         line = 0;
@@ -1288,12 +1342,13 @@ int basic_exec(void) {
                         deny_direct();
                         stat_next();
                         var = Fstack[ Fsize - 1 ].vidx;
-                        Var[ var ]++;
-                        if (Var[ var ] <= Fstack[ Fsize - 1 ].ecnt) {
-                            line = Fstack[ Fsize - 1 ].lidx;
-                            newpc = Fstack[ Fsize - 1 ].ladd;
+                        if (Var[ var ] < Fstack[ Fsize - 1 ].ecnt) {
+                            Var[ var ]++;       // compare BEFORE increment:
+                            line = Fstack[ Fsize - 1 ].lidx;    // no wrap-around
+                            newpc = Fstack[ Fsize - 1 ].ladd;   // at 32767
                             back = 1;
                         } else {
+                            Var[ var ]++;       // leave end+1 as classic BASIC does
                             Fsize--;
                             back = 0;
                         }
@@ -1359,7 +1414,9 @@ int basic_exec(void) {
     return 0;
 }
 
-int basic_command(int inst) {
+int
+basic_command(int inst)
+{
     switch (inst) {
         case BCODE_CLEAR:
             cmd_clear();
@@ -1428,6 +1485,8 @@ int basic_command(int inst) {
     return 0;
 }
 
-char *basic_result(int code) {
+char *
+basic_result(int code)
+{
     return Results[ code ];
 }

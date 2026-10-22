@@ -76,6 +76,8 @@ eval_dim(dim_t *dim)
     } else if (bcode_next() == BCODE_COMMA) {
         bcode_skip();
         col = eval();
+        if (row < 0 || row > CONT_MAXARRAY)    // row was not checked in 2-D form
+            eval_error(EVAL_ILLINDEX);
         if (col < 0 || col > CONT_MAXARRAY)
             eval_error(EVAL_ILLINDEX);
         if (bcode_next() != BCODE_RBRACK)
@@ -228,6 +230,8 @@ level_zero(void)
         if (bcode_next() != BCODE_RBRACK)
             eval_error(EVAL_NORBRACK);
         bcode_skip();
+        if (idx < 0 || idx >= CONT_MAXSTRING)
+            eval_error(EVAL_ILLINDEX);
         res = (word_t) String[ idx ];
         DMSG("@[ %d ] = %d", idx, res);
     } else if (Bcode.inst == BCODE_RND) {
@@ -303,6 +307,8 @@ level_two(void)
                     break;
 
                 case BCODE_MOD:
+                    if (second == 0)
+                        eval_error(EVAL_DIVBYZERO);
                     DMSG("%d %% %d", first, second);
                     first = first % second;
                     break;

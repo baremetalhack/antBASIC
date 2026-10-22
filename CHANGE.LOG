@@ -1,3 +1,32 @@
+=== antBASIC v1.0.4
+    2026-10-22
+    * Code review: fixes for boundary conditions and OS/library interfaces.
+    * main.c: ^C handling now uses sigsetjmp/siglongjmp; SA_RESETHAND dropped
+      so a second ^C can no longer kill the interpreter. Shell mode installs
+      the handler before basic_load(). Stale "Aborted" message after a
+      finished RUN is gone.
+    * basic.c: EDIT re-implemented on plain readline() + rl_startup_hook;
+      ^C alone aborts editing (no Enter needed). Callback loop and the
+      mkstemp/mmap line capture were removed (open_memstream instead).
+    * basic.c: basic_readline() always NUL-terminates and reports EOF;
+      ^D / end of redirected input now exits instead of looping forever.
+      INPUT and HELP use it too (HELP no longer mixes fgets with readline).
+    * basic.c: SAVE truncates an existing file (fopen "w"); previously a
+      shorter program left the tail of the old file behind.
+    * basic.c: FILES handles scandir() failure and frees its entries.
+    * basic.c: LOAD/MERGE skip blank lines.
+    * basic.c: FOR .. TO 32767 no longer loops forever.
+    * eval.c: range checks for @[idx] and for the row index of A[row,col];
+      "%" by zero is reported instead of crashing (SIGFPE).
+    * program.c: prog_list() takes FILE * instead of fd; prog_insert()
+      off-by-one (read of Program[-1]) fixed; RENUM tolerates computed
+      GOTO/GOSUB (GOTO X); no unaligned word access.
+    * bcode.c: no unaligned word access.
+    * token.c: lexer index type made unsigned (UTF-8 bytes on x86 builds).
+    * pi_gpio.c: States[] sized for BMH1-14 (BMH14 was out of bounds) and
+      bit number validated before use; open() flags corrected.
+    * .gitignore added for build products.
+
 === antBASIC v1.0.3
     2022-11-27
     * EXAMPLES/led-hex.bas: BUG was fixed.

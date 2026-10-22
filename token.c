@@ -39,7 +39,7 @@ typedef struct {
 
 static unsigned char Ctype[ 256 ];
 static char *Srcptr;
-static char Next;
+static unsigned char Next;      // unsigned: safe as Ctype[] index for bytes >= 0x80
 
 static table_t
 Keywords[] = {
@@ -329,7 +329,7 @@ string(token_t *tok)
 static int
 delimiter(token_t *tok)
 {
-    int idx;
+    int idx = 0;                // never left at 0: token_read() calls us only for CT_DELIMITER
 
     switch(Next) {
         case '=':
