@@ -21,17 +21,17 @@ invoke and pass numbers to variables and string to \fBstring array @\fR
 .SS RETURNS
 antBASIC returns an 8bit status code to the shell (default value is zero). You can use the \fBEND\fR statement to pass a non-zero value to the shell.
 .PP
-example: \f(CWEND 123\fR returns 123 as a status code to the shell
+example: \f(CREND 123\fR returns 123 as a status code to the shell
 .SH VERSION
 This man page documents antBASIC version \fB1.0.3\fR.
 .SH DESCRIPTION
 \fBantBASIC\fR is a product of the \fBBMH (Bare Metal Hacking)\fR project. It is a modernized version of \fBTiny BASIC\fR, with the addition of I/O manipulation instructions prepared for the \fBRaspberry Pi\fR. Although the language specification is minimal, beginners can learn the basics of programming, and a wide range of I/O controls through antBASIC.
 .SS PROGRAM
-A program consists of several lines, and each line always starts with a line number (1-9999). The maximum program size is \fB2,000 lines\fR and \fB30,000 bytes\fR (you can check the program size with the \f(CWFREE\fR command). Users can enter sentences interactively through the \fBGNU Readline\fR input editor. Usually, there will be ten intervals between line numbers so that you can make additions easily later. When there is no more space between lines, you can create a new gap with the \f(CWRENUM\fR command. Multiple statements can be written in a single line, separated by a \fIcolon\fR.
+A program consists of several lines, and each line always starts with a line number (1-9999). The maximum program size is \fB2,000 lines\fR and \fB30,000 bytes\fR (you can check the program size with the \f(CRFREE\fR command). Users can enter sentences interactively through the \fBGNU Readline\fR input editor. Usually, there will be ten intervals between line numbers so that you can make additions easily later. When there is no more space between lines, you can create a new gap with the \f(CRRENUM\fR command. Multiple statements can be written in a single line, separated by a \fIcolon\fR.
 .PP
 example:
 .nf
-\f(CW10 FOR I=1 TO 10
+\f(CR10 FOR I=1 TO 10
 20 PRINT "Hello, ";:PRINT "world! ";
 30 NEXT
 40 END\fR
@@ -39,7 +39,7 @@ example:
 .SS PROGRAM EXECUTION MODES
 There are three execution modes available.
 .IP "Normal mode" 16
-Stored program is invoked by \f(CWRUN\fR command in interactive session.
+Stored program is invoked by \f(CRRUN\fR command in interactive session.
 .IP "Direct mode" 16
 Direct command line execution in interactive session.
 .IP "Shell mode" 16
@@ -47,7 +47,7 @@ Execution from the shell.
 .SS NUMBERS
 Signed 16bit integer (range from -32768 to 32767). Decimal and hexadecimal (\fI0x\fR prefix is needed) numbers are distinguished internally.
 .PP
-example: \f(CW1234, -1234, 0xABCD, 0xEF\fR
+example: \f(CR1234, -1234, 0xABCD, 0xEF\fR
 .SS STRINGS
 A string is defined as \fBUnicode\fR characters (encoded by \fBUTF-8\fR) surrounded by double quotations. Escaped special characters are as follows.
 .IP "Alarm (BELL)" 16
@@ -73,13 +73,13 @@ Special array @ holds a string. It must be terminated with \fINULL (0)\fR.
 example:
 .PP
 .nf
-\f(CW@="hello!":@[0]=@[0]-0x20:print @ \fR-> Hello!
-\f(CW@[0]=33:@[1]=7:@[2]=0:print @ \fR-> ! with alarm
+\f(CR@="hello!":@[0]=@[0]-0x20:print @ \fR-> Hello!
+\f(CR@[0]=33:@[1]=7:@[2]=0:print @ \fR-> ! with alarm
 .fi
 .SS VARIABLES
 Vaiables A to Z hold integer.
 .PP
-example: \f(CWA=123:B=A+0x1234\fR
+example: \f(CRA=123:B=A+0x1234\fR
 .SS ARRAYS
 Arrays A[] to Z[] hold integers (\fIindex starts from \f(BIZERO\fR).
 Two-dimensional array form is X[column,row].
@@ -87,8 +87,8 @@ Two-dimensional array form is X[column,row].
 example:
 .PP
 .nf
-\f(CWDIM A[1],B[2,3]:A[0]=1:B[0,0]=0,1,2,3,4,5
-A[0] \fR-> 1, \f(CWB[0,2]\fR -> 2, \f(CWB[1,0]\fR -> 3, \f(CWB[1,2]\fR -> 5
+\f(CRDIM A[1],B[2,3]:A[0]=1:B[0,0]=0,1,2,3,4,5
+A[0] \fR-> 1, \f(CRB[0,2]\fR -> 2, \f(CRB[1,0]\fR -> 3, \f(CRB[1,2]\fR -> 5
 .fi
 .SS OPERATORS
 Operator precedence: Unary > Mul/Div/Mod > Add/Sub > Condition > Bitwise
@@ -109,7 +109,7 @@ Clear screen
 .IP "COLOR*" 16
 Define color attribute (0 Black | 1 Red | 2 Green | 3 Yellow | 4 Blue | 5 Magenta | 6 Cyan | 7 White | +10 Bright). 1st argument is fore-ground color, 2nd argument is back-ground color (optional).
 .IP "" 16
-example: \f(CWCOLOR(11,4)\fR -> bright red text on blue background. 
+example: \f(CRCOLOR(11,4)\fR -> bright red text on blue background. 
 .IP "DIM*" 16
 Define array \f(BIsize\fR (not the maximum index number): DIM[colum,row].
 .IP "" 16
@@ -119,71 +119,71 @@ Terminate program. If a number is given, antBASIC returns the value to the shell
 .IP "FOR/NEXT" 16
 Iterate statements between FOR and NEXT.
 .IP "" 16
-example: \f(CWS=0:FOR A=1 TO 10:S=S+A:NEXT\fR
+example: \f(CRS=0:FOR A=1 TO 10:S=S+A:NEXT\fR
 .IP "" 16
 NOTE: \fIincrement step is fixed to ONE\fR
 .IP "GOSUB*/RETURN" 16
 Call subroutine / return to caller.
 .IP "" 16
-example: \f(CWGOSUB 200, GOSUB Y\fR
+example: \f(CRGOSUB 200, GOSUB Y\fR
 .IP "GOTO*" 16
 Jump to specified line number.
 .IP "" 16
-example: \f(CWGOTO 100, GOTO X\fR
+example: \f(CRGOTO 100, GOTO X\fR
 .IP "IF*" 16
-Conditional execution. If the expression immediately after \f(CWIF\fR is \f(BInot zero\fR, the following statement(s) will be executed.
+Conditional execution. If the expression immediately after \f(CRIF\fR is \f(BInot zero\fR, the following statement(s) will be executed.
 .IP "" 16
-example: \f(CWIF A>=0x61 @[0]=A-0x20:@[1]=0:PRINT @\fR
+example: \f(CRIF A>=0x61 @[0]=A-0x20:@[1]=0:PRINT @\fR
 .IP "IN*" 16
 Read bit status. Argument is \f(BIBMH-style GPIO number (1-14)\fR.
 .IP "" 16
 returns: 0 or 1
 .IP "" 16
-example: \f(CWIN(B)\fR -> 0|1
+example: \f(CRIN(B)\fR -> 0|1
 .IP "INPUT*" 16
 Input data from user and stores it in a variable or string array @.
 .IP "" 16
-example: in the case of number) \f(CWINPUT A\fR, string) \f(CWINPUT @\fR
+example: in the case of number) \f(CRINPUT A\fR, string) \f(CRINPUT @\fR
 .IP "LOCATE*" 16
 Locate cursor position (left-upper corner is [0,0]). 1st argument is horizontal position, and 2nd argument is vertical position.
 .IP "" 16
-example: \f(CWLOCATE(X,Y)\fR
+example: \f(CRLOCATE(X,Y)\fR
 .IP "OUT*" 16
 Set bit output as zero or one. First argument is a BMH-style GPIO number (1-14) and second argument is a bit Level (0 GND|1 Vdd).
 .IP "" 16
-example: \f(CWOUT(B,L)\fR
+example: \f(CROUT(B,L)\fR
 .IP "OUTHZ*" 16
 Set bit output as zero or high-impedance (HiZ). First argument is a BMH-style number (1-14), second argument is a bit Level (0 GND|1 Vdd), and third argument is a mode of internal Pull-up resistor (0 None|1 Pull-up).
 .IP "" 16
-example: \f(CWOUTHZ(B,L,P)\fR
+example: \f(CROUTHZ(B,L,P)\fR
 .IP "PRINT*" 16
 Print data.
 .IP "" 16
 integer: immediate value, variable, array
 .IP "" 16
-hexadecimal format (2 or 4-digit): \f(CWHEX2\fR(\fInumber\fR), \f(CWHEX4\fR(\fInumber\fR)
+hexadecimal format (2 or 4-digit): \f(CRHEX2\fR(\fInumber\fR), \f(CRHEX4\fR(\fInumber\fR)
 .IP "" 16
 string: @
 .IP "" 16
 separator: semicolon = no spacing, comma = do tabulation
 .IP "" 16
-example: \f(CWPRINT "H";"I";"!"\fR -> HI!
+example: \f(CRPRINT "H";"I";"!"\fR -> HI!
 .IP "REM" 16
 Insert a remark. \fIComment must be added as a STRING\fR.
 .IP "" 16
-example: \f(CWREM\fR, \f(CWREM "This is a comment string"\fR
+example: \f(CRREM\fR, \f(CRREM "This is a comment string"\fR
 .IP "RND" 16
 Returns random number (range from 0 to 32767).
 .IP "" 16
-example: \f(CWRND()\fR
+example: \f(CRRND()\fR
 .IP "MSLEEP*" 16
 Suspend execution for \fImilli\fR-seconds.
 .IP "" 16
-example: \f(CWMSLEEP(1000)\fR -> 1sec wait
+example: \f(CRMSLEEP(1000)\fR -> 1sec wait
 .IP "USLEEP*" 16
 Suspend execution for \fImicro\fR-seconds.
 .IP "" 16
-example: \f(CWUSLEEP(1000)\fR -> 1msec wait
+example: \f(CRUSLEEP(1000)\fR -> 1msec wait
 .SS DIRECT MODE COMMANDS
 .IP "CLEAR" 16
 Clear containers (variables and arrays).
@@ -192,21 +192,21 @@ Clear screen.
 .IP "DELETE" 16
 Delete program lines.
 .IP "" 16
-example: single line) \f(CWDELETE 100\fR, multiple lines) \f(CWDELETE 210,290\fR
+example: single line) \f(CRDELETE 100\fR, multiple lines) \f(CRDELETE 210,290\fR
 .IP "DUMP" 16
 Dump containers.
 .IP "" 16
-example: \f(CWDUMP\fR (all), \f(CWDUMP V\fR (variables), \f(CWDUMP A\fR (arrays), \f(CWDUMP S\fR (string), \f(CWDUMP L\fR (program lines), \f(CWDUMP B\fR (bytecodes)
+example: \f(CRDUMP\fR (all), \f(CRDUMP V\fR (variables), \f(CRDUMP A\fR (arrays), \f(CRDUMP S\fR (string), \f(CRDUMP L\fR (program lines), \f(CRDUMP B\fR (bytecodes)
 .IP "EDIT" 16
 Edit a program line using GNU Readline input editor.
 .IP "" 16
-example: \f(CWEDIT 100\fR
+example: \f(CREDIT 100\fR
 .IP "END" 16
 Quit antBASIC.
 .IP "FILES" 16
 List files.
 .IP "" 16
-example: current working directory) \f(CWFILES\fR, specified directory) \f(CWFILES "\fIpathname\fR"
+example: current working directory) \f(CRFILES\fR, specified directory) \f(CRFILES "\fIpathname\fR"
 .IP "FREE" 16
 Display memory usage.
 .IP "HELP" 16
@@ -214,29 +214,29 @@ Display help information.
 .IP "LIST" 16
 List all or part of program.
 .IP "" 16
-example: all) \f(CWLIST\fR, single line) \f(CWLIST 100\fR, multiple lines) \f(CWLIST 210,330\fR
+example: all) \f(CRLIST\fR, single line) \f(CRLIST 100\fR, multiple lines) \f(CRLIST 210,330\fR
 .IP "LOAD" 16
 Load a source file into memory.
 .IP "" 16
-example: \f(CWLOAD "example/hello.bas"\fR
+example: \f(CRLOAD "example/hello.bas"\fR
 .IP "MERGE" 16
 Merge an additional file into memory.
 .IP "" 16
-example: \f(CWMERGE "mylib/addon.bas"\fR
+example: \f(CRMERGE "mylib/addon.bas"\fR
 .IP "NEW" 16
 Clear program.
 .IP "PRINT" 16
-Same as \f(CWPRINT\fR statement..
+Same as \f(CRPRINT\fR statement..
 .IP "RENUM" 16
 Renumber program lines.
 .IP "" 16
-example: default [start 100, step 10]) \f(CWRENUM\fR, define start) \f(CWRENUM 1000\fR, specify start and step) \f(CWRENUM\fR 5000,5\fR
+example: default [start 100, step 10]) \f(CRRENUM\fR, define start) \f(CRRENUM 1000\fR, specify start and step) \f(CRRENUM\fR 5000,5\fR
 .IP "RUN" 16
 Start-up program. \fB\fICONTROL-C\fR aborts the program.
 .IP "SAVE" 16
 Save program as a text file.
 .IP "" 16
-example: \f(CWSAVE "myprogram.bas"\fR
+example: \f(CRSAVE "myprogram.bas"\fR
 .SS ENVIRONMENT VARIABLE
 .IP "ANT_MICROWAIT" 16
 .PP
@@ -247,7 +247,7 @@ If more precise control in micro-seconds is required, set the \fBANT_MICROWAIT\f
 \fBantcalib\fR is a utility for estimating the number of loops required for a microsecond delay. The first argument specifies the number of loops, and the second argument specifies the number of loop calls.
 .IP
 .nf
-\f(CW$ ./antcalib 220 10000000
+\f(CR$ ./antcalib 220 10000000
 Loopcount = 220
 Number of loops = 10000000
 
@@ -259,7 +259,7 @@ Mean time --> 1.000933 usec/loop
 On a \fIRaspberry pi 400\fR, the loop count is around \fI220\fR. Once the loop count is determined, add the export command to the \fB~/.bashrc\fR.
 .IP
 .nf
-\f(CW
+\f(CR
 export ANT_MICROWAIT=220
 \fR
 .fi
@@ -268,15 +268,15 @@ export ANT_MICROWAIT=220
 Default Makefile will build an antBASIC binary linked with the \fBGNU Readline library\fR. This binary allows the user to do editing lines before sending them to antBASIC.
 .SH HOME PAGE, SOURCE REPOSITORY, YOUTUBE, TWITTER
 .nf
-\f(CWhttps://baremetalhack.com/en.html\fR
-\f(CWhttps://github.com/baremetalhack/antBASIC\fR
-\f(CWhttps://www.youtube.com/@baremetalhacking\fR
-\f(CWhttps://twitter.com/@DoctorBMH\fR
+\f(CRhttps://baremetalhack.com/en.html\fR
+\f(CRhttps://github.com/baremetalhack/antBASIC\fR
+\f(CRhttps://www.youtube.com/@baremetalhacking\fR
+\f(CRhttps://twitter.com/@DoctorBMH\fR
 .fi
 .SH FEEDBACKS
 .nf
 I'm looking forward to your comments and improvement reports.
-\f(CWantbasic@baremetalhack.com\fR
+\f(CRantbasic@baremetalhack.com\fR
 .fi
 .SH AUTHOR
 .nf

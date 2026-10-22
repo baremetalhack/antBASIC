@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------
 # Makefile for antBASIC on the Raspberry Pi
 #
-# NOTICE  You need to pre-install "libreadline-dev", "atp" and
+# NOTICE  You need to pre-install "libreadline-dev", "enscript" and
 # 	  "ghostscript (includes ps2pdf)" packages before "make std|max".
 #--------------------------------------------------------------------------
 # PREP    $ sudo apt install libreadline-dev atp ghostscript
@@ -19,9 +19,9 @@ CFLAGS += -DREADLINE ### Build antBASIC with readline extension
 CFLAGS += -DPI ### Build antBASIC targeted for Raspberry Pi
 # CFLAGS += -DDEBUG ### Turn on in the case of debugging
 LDLIBS := -lreadline ### Link with GNU Readline library
-ATPFLAGS := -t 8 -date `date "+%Y-%m-%d"`
-ATPFLAGS += -T A4 -M 1,1,2,2 cm	### Paper size and margin definition
-#ATPFLAGS += -N ### With line number
+ESFLAGS := -M A4 # Page size = A4
+ESFLAGS += -2r -C -j --header='$$n|$$D{%F}|Page $$% of $$=' -p -
+PSFLAGS := -sPAPERSIZE=a4
 GROFFFLAGS := -mandoc -Tps
 GROFFFLAGS += -dpaper=a4 ### Paper size
 TARGET_BIN := /usr/local/bin
@@ -61,8 +61,9 @@ antcalib: antcalib.c
 	gcc $(CFLAGS) -o $@ antcalib.c
 
 pdfs:
-	atp $(ATPFLAGS) Makefile byteword.h debug.h escape.h token.h token.c test_token.c bcode.h bcode.c test_bcode.c program.h program.c test_prog.c container.h container.c function.h function.c eval.h eval.c test_eval.c test_assign.c basic.h basic.c pi_gpio.h pi_gpio.c main.c antcalib.c | ps2pdf - - > $(TARGET_DOC)/antbasic_src.pdf
-	groff $(GROFFFLAGS) antbasic.1 | ps2pdf - - > $(TARGET_DOC)/antbasic_man.pdf
+	echo $(ESFLAGS)
+	enscript $(ESFLAGS) Makefile byteword.h debug.h escape.h token.h token.c test_token.c bcode.h bcode.c test_bcode.c program.h program.c test_prog.c container.h container.c function.h function.c eval.h eval.c test_eval.c test_assign.c basic.h basic.c pi_gpio.h pi_gpio.c main.c antcalib.c | ps2pdf $(PSFLAGS) - $(TARGET_DOC)/antbasic_src.pdf
+	groff $(GROFFFLAGS) antbasic.1 | ps2pdf - $(TARGET_DOC)/antbasic_man.pdf
 
 install: antbasic antcalib
 	install -v -t $(TARGET_BIN) antbasic antcalib
